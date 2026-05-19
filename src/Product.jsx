@@ -94,15 +94,17 @@ export default function Product() {
       >
         <div
           style={{
+            position: "relative",
             borderRadius: "32px",
             overflow: "hidden",
+            backgroundClip: "padding-box",
 
             background:
               "linear-gradient(180deg, rgba(108,94,72,0.58) 0%, rgba(74,64,48,0.72) 100%)",
             backdropFilter: "blur(18px)",
             border: "1px solid rgba(255,255,255,0.04)",
 
-            padding: "18px",
+            padding: "18px 18px 52px 18px",
 
             boxShadow:
               "0 10px 24px rgba(0,0,0,0.16)",
@@ -128,26 +130,57 @@ export default function Product() {
               }}
             >
               <TransformComponent>
-                <img
-                  src="/bottle.png"
-                  alt="Glifosat"
+                <div
                   style={{
+                    position: "relative",
                     width: "100%",
                     maxWidth: "260px",
-                    objectFit: "contain",
-                    borderRadius: "22px",
-                    display: "block",
-
-                    transition: "transform 0.25s ease",
-
-                    filter:
-                      "drop-shadow(0 18px 30px rgba(0,0,0,0.28))",
                   }}
-                />
+                >
+                  <img
+                    src="/bottle.png"
+                    alt="Glifosat"
+                    style={{
+                      width: "100%",
+                      objectFit: "contain",
+                      borderRadius: "22px",
+                      display: "block",
+
+                      transition: "transform 0.25s ease",
+
+                      filter:
+                        "drop-shadow(0 8px 14px rgba(0, 0, 0, 0.01))",
+
+                    }}
+                  />
+                </div>
               </TransformComponent>
             </div>
           )}
         </TransformWrapper>
+
+        <div
+          style={{
+            position: "absolute",
+            bottom: "16px",
+            left: "22px",
+            right: "22px",
+
+            textAlign: "center",
+
+            fontSize: "10.5px",
+            lineHeight: 1.35,
+
+            color: "rgba(255,255,255,0.72)",
+
+            fontWeight: 500,
+          }}
+        >
+          *Изображение носит ознакомительный характер.
+          Упаковка и производитель могут отличаться.
+        
+        </div>
+
         </div>
       </div>
 
@@ -193,7 +226,7 @@ export default function Product() {
                 backdropFilter: "blur(12px)",
               }}
             >
-              Инструкция
+              Информация
             </button>
 
             {/* Отзывы */}
@@ -253,7 +286,7 @@ export default function Product() {
               lineHeight: 1,
             }}
           >
-            299 MDL
+            250 MDL
           </div>
         </div>
 
