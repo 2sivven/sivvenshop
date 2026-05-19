@@ -182,10 +182,8 @@ export default function App() {
           style={{
             marginTop: "40px",
             paddingBottom: "34px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            justifyContent: "center",
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
             gap: "18px",
           }}
         >
@@ -210,7 +208,7 @@ export default function App() {
             <div
               key={index}
               style={{
-                width: "72px",
+                width: "100%",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
