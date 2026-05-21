@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "./supabase";
 
 export default function Info() {
@@ -9,6 +9,7 @@ export default function Info() {
   const [name, setName] = useState("");
   const [review, setReview] = useState("");
   const [images, setImages] = useState([]);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchReviews();
@@ -161,6 +162,7 @@ export default function Info() {
         />
 
         <input
+          ref={fileInputRef}
           type="file"
           multiple
           accept="image/*"
@@ -223,6 +225,9 @@ export default function Info() {
               setName("");
               setReview("");
               setImages([]);
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
             }
           }}
           style={{
