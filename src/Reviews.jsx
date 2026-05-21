@@ -10,6 +10,8 @@ export default function Reviews() {
   const [name, setName] = useState("");
   const [review, setReview] = useState("");
   const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] =
+  useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -336,12 +338,14 @@ export default function Reviews() {
                         key={index}
                         src={image}
                         alt=""
+                        onClick={() => setSelectedImage(image)}
                         style={{
                           width: "110px",
                           height: "110px",
                           objectFit: "cover",
                           borderRadius: "16px",
                           flexShrink: 0,
+                          cursor: "zoom-in",
                         }}
                       />
                     )
@@ -352,6 +356,37 @@ export default function Reviews() {
           ))}
         </div>
       </div>
+
+      {selectedImage && (
+        <div
+            onClick={() => setSelectedImage(null)}
+            style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            zIndex: 9999,
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+
+            padding: "20px",
+
+            cursor: "pointer",
+            }}
+        >
+            <img
+            src={selectedImage}
+            alt=""
+            style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                borderRadius: "20px",
+                objectFit: "contain",
+            }}
+            />
+        </div>
+        )}
     </div>
   );
 }
