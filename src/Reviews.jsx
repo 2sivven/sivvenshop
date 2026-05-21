@@ -10,8 +10,11 @@ export default function Reviews() {
   const [name, setName] = useState("");
   const [review, setReview] = useState("");
   const [images, setImages] = useState([]);
-  const [selectedImage, setSelectedImage] =
-  useState(null);
+  const [selectedImages, setSelectedImages] =
+    useState([]);
+
+const [selectedIndex, setSelectedIndex] =
+  useState(0);
 
   const fileInputRef = useRef(null);
 
@@ -152,7 +155,7 @@ export default function Reviews() {
           onChange={(e) => {
             const files = Array.from(
               e.target.files
-            ).slice(0, 2);
+            );
 
             setImages(files);
           }}
@@ -166,15 +169,23 @@ export default function Reviews() {
         <button
           onClick={async () => {
             if (!name || !review) {
-              alert("Заполните имя и отзыв");
-              return;
+            alert("Заполните имя и отзыв");
+            return;
+            }
+
+            if (images.length > 2) {
+            alert(
+                "Отзыв не может быть отправлен, так как прикреплено более двух фотографий"
+            );
+
+            return;
             }
 
             const uploadedImages = [];
 
             for (const image of images) {
               const fileName =
-                `${Date.now()}-${image.name}`;
+                `${Date.now()}-${Math.random()}-${image.name}`;
 
               const { error: uploadError } =
                 await supabase.storage
@@ -329,7 +340,10 @@ export default function Reviews() {
                         key={index}
                         src={image}
                         alt=""
-                        onClick={() => setSelectedImage(image)}
+                        onClick={() => {
+                            setSelectedImages(item.images);
+                            setSelectedIndex(index);
+                            }}
                         style={{
                           width: "110px",
                           height: "110px",
@@ -348,34 +362,62 @@ export default function Reviews() {
         </div>
       </div>
 
-      {selectedImage && (
+        {selectedImages.length > 0 && (
         <div
-            onClick={() => setSelectedImage(null)}
+            onClick={() => {
+            setSelectedImages([]);
+            setSelectedIndex(0);
+            }}
             style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.92)",
+            background: "rgba(0,0,0,0.94)",
             zIndex: 9999,
 
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
 
-            padding: "20px",
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
 
             cursor: "pointer",
             }}
         >
-            <img
-            src={selectedImage}
-            alt=""
-            style={{
-                maxWidth: "100%",
-                maxHeight: "100%",
-                borderRadius: "20px",
-                objectFit: "contain",
-            }}
-            />
+            {selectedImages.map((img, index) => (
+            <div
+                key={index}
+                ref={(el) => {
+                    if (el && index === selectedIndex) {
+                    el.scrollIntoView({
+                        behavior: "auto",
+                        inline: "center",
+                    });
+                    }
+                }}
+                style={{
+                minWidth: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "20px",
+                boxSizing: "border-box",
+
+                scrollSnapAlign: "center",
+                }}
+            >
+                <img
+                src={img}
+                alt=""
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    borderRadius: "20px",
+                    objectFit: "contain",
+                }}
+                />
+            </div>
+            ))}
         </div>
         )}
     </div>
