@@ -231,6 +231,7 @@ export default function Product() {
 
             {/* Отзывы */}
             <button
+              onClick={() => navigate("/reviews")}
               style={{
                 flex: 1,
                 height: "100%",
