@@ -93,15 +93,6 @@ export default function Reviews() {
           Отзывы
         </div>
 
-        <div
-          style={{
-            fontSize: "18px",
-            opacity: 0.62,
-            lineHeight: 1.5,
-          }}
-        >
-          Реальные отзывы покупателей
-        </div>
       </div>
 
       {/* Основная карточка */}
