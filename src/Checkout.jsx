@@ -35,6 +35,10 @@ export default function Checkout() {
 
     boxSizing: "border-box",
 
+      backgroundColor: "#FFFFFF",
+      color: "#161616",
+      caretColor: "#FF0000",
+
   };
 
   return (
