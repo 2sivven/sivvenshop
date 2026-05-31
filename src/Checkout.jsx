@@ -341,7 +341,7 @@ export default function Checkout() {
                 color: "#161616",
               }}
             >
-              Район
+              Город - Район
               <span style={{ color: "#E53935" }}>
                 {" "}*
               </span>
@@ -349,7 +349,7 @@ export default function Checkout() {
 
             <input
               className="checkout-input"
-              placeholder="Orhei"
+              placeholder="mun.Chisinau"
               value={district}
               onChange={(e) => {
                 const value = e.target.value.replace(
@@ -377,7 +377,7 @@ export default function Checkout() {
 
             <input
               className="checkout-input"
-              placeholder="Stauceni"
+              placeholder="or.Chisinau"
               value={city}
               onChange={(e) => {
                 const value = e.target.value.replace(
@@ -405,7 +405,7 @@ export default function Checkout() {
 
             <input
               className="checkout-input"
-              placeholder="Stefan cel Mare"
+              placeholder="bd.Moscovei"
               value={street}
               onChange={(e) => {
                 const value = e.target.value.replace(
@@ -474,7 +474,7 @@ export default function Checkout() {
 
               <input
                 className="checkout-input"
-                placeholder="79 872 852"
+                placeholder="79 111 111"
                 value={phone}
                 onChange={(e) => {
                   let value = e.target.value.replace(/\D/g, "");
