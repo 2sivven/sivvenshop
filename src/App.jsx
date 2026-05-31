@@ -2,6 +2,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import Product from "./Product";
 import Info from "./Info";
 import Reviews from "./Reviews";
+import Checkout from "./Checkout";
 
 export default function App() {
   const navigate = useNavigate();
@@ -303,6 +304,11 @@ export default function App() {
       <Route
         path="/reviews"
         element={<Reviews />}
+      />
+
+      <Route
+        path="/checkout"
+        element={<Checkout />}
       />
     </Routes>
   );
