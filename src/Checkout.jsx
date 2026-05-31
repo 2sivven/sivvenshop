@@ -186,7 +186,7 @@ export default function Checkout() {
                 }}
               >
                 <span>Цена</span>
-                <span>250 MDL</span>
+                <span>{250 * quantity} MDL</span>
               </div>
 
               <div
@@ -199,7 +199,7 @@ export default function Checkout() {
                 }}
               >
                 <span>Итого</span>
-                <span>250 MDL</span>
+                <span>{250 * quantity} MDL</span>
               </div>
             </div>
           </div>
