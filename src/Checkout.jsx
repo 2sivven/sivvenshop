@@ -18,6 +18,7 @@ export default function Checkout() {
   const [errors, setErrors] = useState({});
 
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const productPrice = 250;
   const deliveryPrice = 50;
@@ -601,6 +602,7 @@ export default function Checkout() {
             <button
               onClick={async () => {
                 if (validateForm()) {
+                  setLoading(true);
                   const order = {
                     fullName,
                     district,
@@ -641,11 +643,14 @@ export default function Checkout() {
 
                   if (error) {
                     console.error(error);
+
+                    setLoading(false);
+
                     alert("Ошибка сохранения заказа");
                     return;
                   }
 
-                  alert("Заказ сохранён");
+                  setLoading(false);
 
                 }
               }}
@@ -671,6 +676,59 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              width: "70px",
+              height: "70px",
+
+              border: "6px solid rgba(255,255,255,0.3)",
+              borderTop: "6px solid #8AD000",
+
+              borderRadius: "50%",
+
+              animation: "spin 1s linear infinite",
+            }}
+          />
+
+          <div
+            style={{
+              marginTop: "20px",
+              color: "#FFFFFF",
+              fontSize: "20px",
+              fontWeight: 700,
+            }}
+          >
+            Подготавливаем заказ...
+          </div>
+
+          <div
+            style={{
+              marginTop: "8px",
+              color: "#FFFFFF",
+              opacity: 0.85,
+            }}
+          >
+            Пожалуйста, не закрывайте приложение
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
