@@ -199,7 +199,8 @@
 
   transition: all 0.2s ease;
   
-  caret-color: #8ad000;
+  color: #161616;
+  caret-color: #161616;
 }
 
 .checkout-input:focus {
