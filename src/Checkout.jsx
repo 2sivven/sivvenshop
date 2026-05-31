@@ -221,7 +221,7 @@ export default function Checkout() {
                 color: "#444",
               }}
             >
-              <span>Доставка до отделения Nova Post</span>
+              <span>Доставка Nova Post</span>
               <span>{deliveryPrice} MDL</span>
             </div>
 
@@ -239,45 +239,6 @@ export default function Checkout() {
             </div>
           </div>
 
-          <div
-            style={{
-              marginTop: "18px",
-              background: "#FFFFFF",
-              borderRadius: "28px",
-              padding: "20px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "20px",
-                fontWeight: 700,
-                color: "#161616",
-                marginBottom: "12px",
-              }}
-            >
-              📦 Доставка
-            </div>
-
-            <div
-              style={{
-                color: "#444",
-                lineHeight: "1.7",
-                fontSize: "15px",
-              }}
-            >
-              Отправка заказов осуществляется только через отделения Nova Post по территории Республики Молдова.
-              <br />
-              <br />
-              Самовывоз не предусмотрен.
-              <br />
-              <br />
-              Стоимость доставки составляет 50 MDL.
-              <br />
-              <br />
-              Заказы отправляются после подтверждения оплаты.
-            </div>
-          </div>
           <div
             style={{
               marginTop: "18px",
@@ -328,6 +289,7 @@ export default function Checkout() {
                 placeholder="Дом"
                 style={{
                   ...inputStyle,
+                  flex: 1,
                   marginBottom: "0",
                 }}
               />
@@ -336,6 +298,7 @@ export default function Checkout() {
                 placeholder="Квартира"
                 style={{
                   ...inputStyle,
+                  flex: 1,
                   marginBottom: "0",
                 }}
               />
