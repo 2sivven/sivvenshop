@@ -3,7 +3,17 @@ import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
   const navigate = useNavigate();
+
   const [quantity, setQuantity] = useState(1);
+  const [fullName, setFullName] = useState("");
+  const [district, setDistrict] = useState("");
+  const [city, setCity] = useState("");
+  const [street, setStreet] = useState("");
+  const [house, setHouse] = useState("");
+  const [apartment, setApartment] = useState("");
+  const [phone, setPhone] = useState("");
+  const [comment, setComment] = useState("");
+
   const productPrice = 250;
   const deliveryPrice = 50;
 
@@ -261,6 +271,8 @@ export default function Checkout() {
 
             <input
               placeholder="Имя и фамилия (латиницей)"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               style={inputStyle}
             />
 
