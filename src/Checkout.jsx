@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const [quantity, setQuantity] = useState(1);
 
   return (
     <div
@@ -115,12 +117,64 @@ export default function Checkout() {
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  alignItems: "center",
                   marginBottom: "10px",
                   color: "#444",
                 }}
               >
                 <span>Количество</span>
-                <span>1 шт.</span>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      setQuantity(Math.max(1, quantity - 1))
+                    }
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "#EFEFEF",
+                      cursor: "pointer",
+                      fontSize: "18px",
+                    }}
+                  >
+                    −
+                  </button>
+
+                  <span
+                    style={{
+                      minWidth: "24px",
+                      textAlign: "center",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {quantity}
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      setQuantity(quantity + 1)
+                    }
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "#EFEFEF",
+                      cursor: "pointer",
+                      fontSize: "18px",
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
 
               <div
