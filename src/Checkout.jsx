@@ -35,7 +35,6 @@ export default function Checkout() {
 
     boxSizing: "border-box",
 
-    outline: "none",
   };
 
   return (
@@ -270,6 +269,7 @@ export default function Checkout() {
             </div>
 
             <input
+              className="checkout-input"
               placeholder="Имя и фамилия (латиницей)"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -277,17 +277,26 @@ export default function Checkout() {
             />
 
             <input
+              className="checkout-input"
               placeholder="Район"
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
               style={inputStyle}
             />
 
             <input
+              className="checkout-input"
               placeholder="Населённый пункт"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
               style={inputStyle}
             />
 
             <input
+              className="checkout-input"
               placeholder="Улица"
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
               style={inputStyle}
             />
 
@@ -299,7 +308,10 @@ export default function Checkout() {
               }}
             >
               <input
+                className="checkout-input"
                 placeholder="Дом"
+                value={house}
+                onChange={(e) => setHouse(e.target.value)}
                 style={{
                   ...inputStyle,
                   flex: 1,
@@ -308,7 +320,10 @@ export default function Checkout() {
               />
 
               <input
+                className="checkout-input"
                 placeholder="Квартира"
+                value={apartment}
+                onChange={(e) => setApartment(e.target.value)}
                 style={{
                   ...inputStyle,
                   flex: 1,
@@ -318,12 +333,18 @@ export default function Checkout() {
             </div>
 
             <input
+              className="checkout-input"
               placeholder="Телефон"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               style={inputStyle}
             />
 
             <textarea
+              className="checkout-input"
               placeholder="Комментарий к заказу (необязательно)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
               style={{
                 ...inputStyle,
                 minHeight: "110px",
