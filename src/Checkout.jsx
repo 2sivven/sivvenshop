@@ -349,7 +349,7 @@ export default function Checkout() {
 
             <input
               className="checkout-input"
-              placeholder="mun.Chisinau"
+              placeholder="mun. Chișinău"
               value={district}
               onChange={(e) => {
                 const value = e.target.value.replace(
@@ -377,7 +377,7 @@ export default function Checkout() {
 
             <input
               className="checkout-input"
-              placeholder="or.Chisinau"
+              placeholder="or. Chișinău"
               value={city}
               onChange={(e) => {
                 const value = e.target.value.replace(
