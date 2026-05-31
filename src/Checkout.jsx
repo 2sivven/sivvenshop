@@ -37,7 +37,8 @@ export default function Checkout() {
 
       backgroundColor: "#FFFFFF",
       color: "#161616",
-      caretColor: "#FF0000",
+
+      caretColor: "#161616",
 
   };
 
