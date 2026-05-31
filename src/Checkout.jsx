@@ -325,7 +325,7 @@ export default function Checkout() {
               value={fullName}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-z\s'-]/g,
+                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
                   ""
                 );
 
@@ -358,7 +358,7 @@ export default function Checkout() {
               value={district}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-z\s'-]/g,
+                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
                   ""
                 );
 
@@ -391,7 +391,7 @@ export default function Checkout() {
               value={city}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-z\s'-]/g,
+                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
                   ""
                 );
 
@@ -399,7 +399,7 @@ export default function Checkout() {
               }}
               style={{
                 ...inputStyle,
-                border: errors.district
+                border: errors.city
                   ? "1px solid #E53935"
                   : "1px solid #E7E7E7",
               }}
@@ -424,7 +424,7 @@ export default function Checkout() {
               value={street}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-z\s'-]/g,
+                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
                   ""
                 );
 
@@ -432,7 +432,7 @@ export default function Checkout() {
               }}
               style={{
                 ...inputStyle,
-                border: errors.district
+                border: errors.street
                   ? "1px solid #E53935"
                   : "1px solid #E7E7E7",
               }}
@@ -577,6 +577,24 @@ export default function Checkout() {
                 Я согласен с обработкой персональных данных,
                 необходимых для оформления и доставки заказа.
               </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: "6px",
+              }}
+            >
+              <span
+                onClick={() => navigate("/privacy")}
+                style={{
+                  color: "#8ad000",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                Политика конфиденциальности
+              </span>
             </div>
 
             <button
