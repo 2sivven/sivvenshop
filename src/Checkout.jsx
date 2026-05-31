@@ -16,6 +16,8 @@ export default function Checkout() {
 
   const [errors, setErrors] = useState({});
 
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+
   const productPrice = 250;
   const deliveryPrice = 50;
 
@@ -45,6 +47,9 @@ export default function Checkout() {
 
     if (phone.replace(/\D/g, "").length !== 8)
       newErrors.phone = true;
+
+    if (!privacyAccepted)
+      newErrors.privacy = true;
 
     setErrors(newErrors);
 
@@ -359,7 +364,12 @@ export default function Checkout() {
 
                 setDistrict(value);
               }}
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                border: errors.district
+                  ? "1px solid #E53935"
+                  : "1px solid #E7E7E7",
+              }}
             />
 
             <div
@@ -387,7 +397,12 @@ export default function Checkout() {
 
                 setCity(value);
               }}
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                border: errors.district
+                  ? "1px solid #E53935"
+                  : "1px solid #E7E7E7",
+              }}
             />
 
             <div
@@ -415,7 +430,12 @@ export default function Checkout() {
 
                 setStreet(value);
               }}
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                border: errors.district
+                  ? "1px solid #E53935"
+                  : "1px solid #E7E7E7",
+              }}
             />
 
             <div
@@ -434,6 +454,9 @@ export default function Checkout() {
                   ...inputStyle,
                   flex: 1,
                   marginBottom: "0",
+                  border: errors.house
+                    ? "1px solid #E53935"
+                    : "1px solid #E7E7E7",
                 }}
               />
 
@@ -454,7 +477,9 @@ export default function Checkout() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                border: "1px solid #E7E7E7",
+                border: errors.phone
+                  ? "1px solid #E53935"
+                  : "1px solid #E7E7E7",
                 borderRadius: "16px",
                 padding: "0 16px",
                 marginBottom: "14px",
@@ -518,6 +543,41 @@ export default function Checkout() {
                 marginBottom: "0",
               }}
             />
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                marginTop: "18px",
+                marginBottom: "18px",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={privacyAccepted}
+                onChange={(e) =>
+                  setPrivacyAccepted(e.target.checked)
+                }
+                style={{
+                  marginTop: "3px",
+                  transform: "scale(1.2)",
+                }}
+              />
+
+              <div
+                style={{
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  color: errors.privacy
+                    ? "#E53935"
+                    : "#666",
+                }}
+              >
+                Я согласен с обработкой персональных данных,
+                необходимых для оформления и доставки заказа.
+              </div>
+            </div>
 
             <button
               onClick={() => {
