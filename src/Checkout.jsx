@@ -14,6 +14,8 @@ export default function Checkout() {
   const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");
 
+  const [errors, setErrors] = useState({});
+
   const productPrice = 250;
   const deliveryPrice = 50;
 
@@ -22,6 +24,32 @@ export default function Checkout() {
 
   const orderTotal =
     productsTotal + deliveryPrice;
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!fullName.trim())
+      newErrors.fullName = true;
+
+    if (!district.trim())
+      newErrors.district = true;
+
+    if (!city.trim())
+      newErrors.city = true;
+
+    if (!street.trim())
+      newErrors.street = true;
+
+    if (!house.trim())
+      newErrors.house = true;
+
+    if (phone.replace(/\D/g, "").length !== 8)
+      newErrors.phone = true;
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const inputStyle = {
     width: "100%",
@@ -35,10 +63,10 @@ export default function Checkout() {
 
     boxSizing: "border-box",
 
-      backgroundColor: "#FFFFFF",
-      color: "#161616",
+    backgroundColor: "#FFFFFF",
+    color: "#161616",
 
-      caretColor: "#161616",
+    caretColor: "#161616",
 
   };
 
@@ -273,35 +301,120 @@ export default function Checkout() {
               Получатель
             </div>
 
+            <div
+              style={{
+                marginBottom: "8px",
+                fontWeight: 600,
+                color: "#161616",
+              }}
+            >
+              Имя и фамилия
+              <span style={{ color: "#E53935" }}>
+                {" "}*
+              </span>
+            </div>
+
             <input
               className="checkout-input"
-              placeholder="Имя и фамилия (латиницей)"
+              placeholder="Maxim Ivanita"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              style={inputStyle}
+              onChange={(e) => {
+                const value = e.target.value.replace(
+                  /[^A-Za-z\s'-]/g,
+                  ""
+                );
+
+                setFullName(value);
+              }}
+              style={{
+                ...inputStyle,
+                border: errors.fullName
+                  ? "1px solid #E53935"
+                  : "1px solid #E7E7E7",
+              }}
             />
+
+            <div
+              style={{
+                marginBottom: "8px",
+                fontWeight: 600,
+                color: "#161616",
+              }}
+            >
+              Район
+              <span style={{ color: "#E53935" }}>
+                {" "}*
+              </span>
+            </div>
 
             <input
               className="checkout-input"
-              placeholder="Район"
+              placeholder="Orhei"
               value={district}
-              onChange={(e) => setDistrict(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(
+                  /[^A-Za-z\s'-]/g,
+                  ""
+                );
+
+                setDistrict(value);
+              }}
               style={inputStyle}
             />
 
+            <div
+              style={{
+                marginBottom: "8px",
+                fontWeight: 600,
+                color: "#161616",
+              }}
+            >
+              Населённый пункт
+              <span style={{ color: "#E53935" }}>
+                {" "}*
+              </span>
+            </div>
+
             <input
               className="checkout-input"
-              placeholder="Населённый пункт"
+              placeholder="Stauceni"
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(
+                  /[^A-Za-z\s'-]/g,
+                  ""
+                );
+
+                setCity(value);
+              }}
               style={inputStyle}
             />
 
+            <div
+              style={{
+                marginBottom: "8px",
+                fontWeight: 600,
+                color: "#161616",
+              }}
+            >
+              Улица
+              <span style={{ color: "#E53935" }}>
+                {" "}*
+              </span>
+            </div>
+
             <input
               className="checkout-input"
-              placeholder="Улица"
+              placeholder="Stefan cel Mare"
               value={street}
-              onChange={(e) => setStreet(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(
+                  /[^A-Za-z\s'-]/g,
+                  ""
+                );
+
+                setStreet(value);
+              }}
               style={inputStyle}
             />
 
@@ -337,13 +450,61 @@ export default function Checkout() {
               />
             </div>
 
-            <input
-              className="checkout-input"
-              placeholder="Телефон"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              style={inputStyle}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid #E7E7E7",
+                borderRadius: "16px",
+                padding: "0 16px",
+                marginBottom: "14px",
+                background: "#FFFFFF",
+              }}
+            >
+              <span
+                style={{
+                  color: "#666",
+                  marginRight: "10px",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                +373
+              </span>
+
+              <input
+                className="checkout-input"
+                placeholder="79 872 852"
+                value={phone}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, "");
+
+                  value = value.slice(0, 8);
+
+                  if (value.length > 5) {
+                    value =
+                      value.slice(0, 2) +
+                      " " +
+                      value.slice(2, 5) +
+                      " " +
+                      value.slice(5);
+                  } else if (value.length > 2) {
+                    value =
+                      value.slice(0, 2) +
+                      " " +
+                      value.slice(2);
+                  }
+
+                  setPhone(value);
+                }}
+                style={{
+                  ...inputStyle,
+                  border: "none",
+                  marginBottom: "0",
+                  paddingLeft: "0",
+                }}
+              />
+            </div>
 
             <textarea
               className="checkout-input"
@@ -357,6 +518,32 @@ export default function Checkout() {
                 marginBottom: "0",
               }}
             />
+
+            <button
+              onClick={() => {
+                if (validateForm()) {
+                  alert("Форма заполнена корректно");
+                }
+              }}
+              style={{
+                width: "100%",
+                marginTop: "20px",
+                padding: "16px",
+
+                border: "none",
+                borderRadius: "18px",
+
+                background: "#8ad000",
+                color: "#fff",
+
+                fontSize: "17px",
+                fontWeight: 700,
+
+                cursor: "pointer",
+              }}
+            >
+              Оплатить заказ
+            </button>
           </div>
         </div>
       </div>
