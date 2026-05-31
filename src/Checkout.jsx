@@ -316,7 +316,7 @@ export default function Checkout() {
 
             <input
               className="checkout-input"
-              placeholder="Maxim Ivanita"
+              placeholder="Ivanov Ivan"
               value={fullName}
               onChange={(e) => {
                 const value = e.target.value.replace(
