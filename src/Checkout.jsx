@@ -283,6 +283,7 @@ export default function Checkout() {
               style={{
                 display: "flex",
                 gap: "12px",
+                marginBottom: "14px",
               }}
             >
               <input
