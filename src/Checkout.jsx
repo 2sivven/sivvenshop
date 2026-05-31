@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "./supabase";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -358,7 +359,7 @@ export default function Checkout() {
               value={district}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
+                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-.]/g,
                   ""
                 );
 
@@ -391,7 +392,7 @@ export default function Checkout() {
               value={city}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
+                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-.]/g,
                   ""
                 );
 
@@ -424,7 +425,7 @@ export default function Checkout() {
               value={street}
               onChange={(e) => {
                 const value = e.target.value.replace(
-                  /[^A-Za-zĂÂÎȘȚăâîșț\s'-]/g,
+                  /[^A-Za-z0-9ĂÂÎȘȚăâîșț\s'-.]/g,
                   ""
                 );
 
@@ -598,9 +599,54 @@ export default function Checkout() {
             </div>
 
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (validateForm()) {
-                  alert("Форма заполнена корректно");
+                  const order = {
+                    fullName,
+                    district,
+                    city,
+                    street,
+                    house,
+                    apartment,
+                    phone,
+                    comment,
+                    quantity,
+                    productsTotal,
+                    deliveryPrice,
+                    orderTotal,
+                  };
+
+                  console.log(order);
+
+                  const { error } = await supabase
+                    .from("orders")
+                    .insert([
+                      {
+                        full_name: fullName,
+                        district,
+                        city,
+                        street,
+                        house,
+                        apartment,
+                        phone,
+                        comment,
+                        quantity,
+                        products_total: productsTotal,
+                        delivery_price: deliveryPrice,
+                        order_total: orderTotal,
+                        status: "new",
+                        payment_status: "pending",
+                      },
+                    ]);
+
+                  if (error) {
+                    console.error(error);
+                    alert("Ошибка сохранения заказа");
+                    return;
+                  }
+
+                  alert("Заказ сохранён");
+
                 }
               }}
               style={{
