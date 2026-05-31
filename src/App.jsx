@@ -4,6 +4,7 @@ import Info from "./Info";
 import Reviews from "./Reviews";
 import Checkout from "./Checkout";
 import PrivacyPolicy from "./PrivacyPolicy";
+import Admin from "./Admin";
 
 export default function App() {
   const navigate = useNavigate();
@@ -315,6 +316,11 @@ export default function App() {
       <Route
         path="/privacy"
         element={<PrivacyPolicy />}
+      />
+
+      <Route
+        path="/admin"
+        element={<Admin />}
       />
     </Routes>
   );
