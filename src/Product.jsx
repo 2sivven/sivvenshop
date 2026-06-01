@@ -184,79 +184,48 @@ export default function Product() {
         </div>
       </div>
 
-      {/* Инструкция / Отзывы */}
+      {/* Информация | Отзывы */}
       <div
         style={{
-          marginTop: "28px",
-
-          width: "100%",
-          height: "68px",
-
+          marginTop: "24px",
           display: "flex",
+          justifyContent: "center",
           alignItems: "center",
-
-          gap: "12px",
+          gap: "18px",
         }}
       >
-
-        {/* Инструкция */}
-        <button
+        <span
           onClick={() => navigate("/info")}
           style={{
-            flex: 1,
-            height: "100%",
-
-            border: "1px solid rgba(255,255,255,0.04)",
-
-            background:
-              "linear-gradient(180deg, rgba(108,94,72,0.58) 0%, rgba(74,64,48,0.72) 100%)",
-
-            color: "#FFFFFF",
-
-            fontSize: "17px",
-            fontWeight: 600,
-
             cursor: "pointer",
-
-            boxShadow:
-              "0 8px 22px rgba(0,0,0,0.12)",
-
-            borderRadius: "22px",
-            margin: "6px",
-            backdropFilter: "blur(12px)",
+            fontSize: "18px",
+            fontWeight: 600,
+            color: "#ffffff",
           }}
         >
           Информация
-        </button>
+        </span>
 
-        {/* Отзывы */}
-        <button
+        <span
+          style={{
+            color: "rgba(255,255,255,0.35)",
+            fontSize: "20px",
+          }}
+        >
+          |
+        </span>
+
+        <span
           onClick={() => navigate("/reviews")}
           style={{
-            flex: 1,
-            height: "100%",
-
-            border: "1px solid rgba(255,255,255,0.04)",
-
-            background:
-              "linear-gradient(180deg, rgba(108,94,72,0.58) 0%, rgba(74,64,48,0.72) 100%)",
-            color: "#F3F4F6",
-
-            fontSize: "17px",
-            fontWeight: 600,
-
-            boxShadow:
-              "0 8px 22px rgba(0,0,0,0.12)",
-
-            borderRadius: "22px",
-            margin: "6px",
-            backdropFilter: "blur(12px)",
-
             cursor: "pointer",
+            fontSize: "18px",
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.7)",
           }}
         >
           Отзывы
-        </button>
+        </span>
       </div>
 
       {/* Цена + кнопка */}
@@ -314,16 +283,11 @@ export default function Product() {
       <div
         style={{
           marginTop: "24px",
-          background:
-            "linear-gradient(180deg, rgba(108,94,72,0.58) 0%, rgba(74,64,48,0.72) 100%)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid rgba(255,255,255,0.04)",
-          borderRadius: "28px",
-          padding: "18px 10px",
+          paddingTop: "18px",
+          borderTop: "1px solid rgba(255,255,255,0.12)",
           display: "flex",
           justifyContent: "space-around",
           alignItems: "center",
-          boxShadow: "0 8px 22px rgba(0,0,0,0.12)",
         }}
       >
         <div
