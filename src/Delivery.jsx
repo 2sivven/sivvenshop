@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import TopMenu from "./TopMenu";
 
 export default function Delivery() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function Delivery() {
       <button onClick={() => navigate(-1)}>
         Назад
       </button>
+
+      <TopMenu />
 
       <h1>Оплата и доставка</h1>
 
