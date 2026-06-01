@@ -161,10 +161,7 @@ export default function Product() {
 
           <div
             style={{
-              position: "absolute",
-              bottom: "16px",
-              left: "22px",
-              right: "22px",
+              marginTop: "14px",
 
               textAlign: "center",
 
