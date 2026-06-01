@@ -135,6 +135,7 @@ export default function Product() {
                       position: "relative",
                       width: "100%",
                       maxWidth: "260px",
+                      margin: "0 auto",
                     }}
                   >
                     <img
