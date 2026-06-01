@@ -7,6 +7,7 @@ import PrivacyPolicy from "./PrivacyPolicy";
 import Admin from "./Admin";
 import Contacts from "./Contacts";
 import Delivery from "./Delivery";
+import Support from "./Support";
 
 export default function App() {
   const navigate = useNavigate();
@@ -333,6 +334,11 @@ export default function App() {
       <Route
         path="/admin"
         element={<Admin />}
+      />
+
+      <Route
+        path="/support"
+        element={<Support />}
       />
     </Routes>
   );
