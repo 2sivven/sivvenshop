@@ -152,7 +152,7 @@ export default function Product() {
                         borderRadius: "22px",
                         display: "block",
 
-                        transform: "translateX(-12px)",
+                        transform: "translateX(-11px)",
 
                         transition: "transform 0.25s ease",
 
