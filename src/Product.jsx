@@ -140,7 +140,6 @@ export default function Product() {
                     style={{
                       position: "relative",
                       width: "100%",
-                      maxWidth: "260px",
                     }}
                   >
                     <img
