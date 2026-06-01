@@ -3,9 +3,11 @@ import { supabase } from "./supabase";
 
 export default function Admin() {
   const [orders, setOrders] = useState([]);
+  const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
     loadOrders();
+    loadConversations();
   }, []);
 
   async function loadOrders() {
@@ -20,6 +22,20 @@ export default function Admin() {
     }
 
     setOrders(data || []);
+  }
+
+  async function loadConversations() {
+    const { data, error } = await supabase
+      .from("support_conversations")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setConversations(data || []);
   }
 
   return (
@@ -55,13 +71,9 @@ export default function Admin() {
               <strong>Заказ #{order.id}</strong>
             </div>
 
-            <div>
-              {order.full_name}
-            </div>
+            <div>{order.full_name}</div>
 
-            <div>
-              {order.phone}
-            </div>
+            <div>{order.phone}</div>
 
             <div>
               Количество: {order.quantity}
@@ -73,6 +85,50 @@ export default function Admin() {
 
             <div>
               Статус: {order.status}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h1
+        style={{
+          marginTop: "50px",
+        }}
+      >
+        Поддержка
+      </h1>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          marginTop: "20px",
+        }}
+      >
+        {conversations.map((conversation) => (
+          <div
+            key={conversation.id}
+            style={{
+              background: "#FFFFFF",
+              borderRadius: "18px",
+              padding: "16px",
+              boxShadow:
+                "0 4px 12px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div>
+              <strong>
+                Обращение #{conversation.id}
+              </strong>
+            </div>
+
+            <div>
+              Клиент: {conversation.client_name}
+            </div>
+
+            <div>
+              Статус: {conversation.status}
             </div>
           </div>
         ))}
