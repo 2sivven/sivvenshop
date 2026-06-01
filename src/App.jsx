@@ -6,6 +6,7 @@ import Checkout from "./Checkout";
 import PrivacyPolicy from "./PrivacyPolicy";
 import Admin from "./Admin";
 import Contacts from "./Contacts";
+import Delivery from "./Delivery";
 
 export default function App() {
   const navigate = useNavigate();
@@ -322,6 +323,11 @@ export default function App() {
       <Route
         path="/contacts"
         element={<Contacts />}
+      />
+
+      <Route
+        path="/delivery"
+        element={<Delivery />}
       />
 
       <Route
