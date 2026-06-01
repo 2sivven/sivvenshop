@@ -129,13 +129,18 @@ export default function Product() {
                   }, 120);
                 }}
               >
-                <TransformComponent>
+                <TransformComponent
+                  wrapperStyle={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
                   <div
                     style={{
                       position: "relative",
                       width: "100%",
                       maxWidth: "260px",
-                      margin: "0 auto",
                     }}
                   >
                     <img
