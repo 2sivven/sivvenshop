@@ -26,6 +26,22 @@ export default function Admin() {
     setOrders(data || []);
   }
 
+  async function loadMessages(conversationId) {
+    const { data, error } = await supabase
+      .from("support_messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setMessages(data || []);
+    setSelectedConversation(conversationId);
+  }
+
   async function loadConversations() {
     const { data, error } = await supabase
       .from("support_conversations")
@@ -134,6 +150,7 @@ export default function Admin() {
             </div>
 
             <button
+              onClick={() => loadMessages(conversation.id)}
               style={{
                 marginTop: "12px",
                 padding: "10px 16px",
@@ -151,6 +168,40 @@ export default function Admin() {
           </div>
         ))}
       </div>
+      {selectedConversation && (
+        <div
+          style={{
+            marginTop: "30px",
+            background: "#fff",
+            borderRadius: "18px",
+            padding: "20px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          }}
+        >
+          <h2>Чат</h2>
+
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                marginBottom: "12px",
+                padding: "12px",
+                borderRadius: "12px",
+                background:
+                  msg.sender === "client"
+                    ? "#f3f3f3"
+                    : "#dff4d1",
+              }}
+            >
+              <strong>{msg.sender}</strong>
+
+              <div>
+                {msg.message}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
