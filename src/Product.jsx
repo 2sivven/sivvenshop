@@ -334,7 +334,7 @@ export default function Product() {
         />
 
         <div
-          onClick={() => navigate("/contacts")}
+          onClick={() => navigate("/support")}
           style={{
             display: "flex",
             flexDirection: "column",
