@@ -27,11 +27,16 @@ export default function Admin() {
   }
 
   async function loadMessages(conversationId) {
+    console.log("OPEN CHAT", conversationId);
+
     const { data, error } = await supabase
       .from("support_messages")
       .select("*")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
+
+    console.log("DATA:", data);
+    console.log("ERROR:", error);
 
     if (error) {
       console.error(error);
