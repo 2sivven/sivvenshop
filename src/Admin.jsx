@@ -26,6 +26,20 @@ export default function Admin() {
     setOrders(data || []);
   }
 
+  async function loadConversations() {
+    const { data, error } = await supabase
+      .from("support_conversations")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setConversations(data || []);
+  }
+
   async function loadMessages(conversationId) {
     console.log("OPEN CHAT", conversationId);
 
@@ -45,20 +59,6 @@ export default function Admin() {
 
     setMessages(data || []);
     setSelectedConversation(conversationId);
-  }
-
-  async function loadConversations() {
-    const { data, error } = await supabase
-      .from("support_conversations")
-      .select("*")
-      .order("id", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setConversations(data || []);
   }
 
   return (
@@ -86,8 +86,7 @@ export default function Admin() {
               background: "#FFFFFF",
               borderRadius: "18px",
               padding: "16px",
-              boxShadow:
-                "0 4px 12px rgba(0,0,0,0.08)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
             <div>
@@ -123,6 +122,15 @@ export default function Admin() {
 
       <div
         style={{
+          marginBottom: "20px",
+          fontWeight: "bold",
+        }}
+      >
+        selectedConversation: {String(selectedConversation)}
+      </div>
+
+      <div
+        style={{
           display: "flex",
           flexDirection: "column",
           gap: "12px",
@@ -136,8 +144,7 @@ export default function Admin() {
               background: "#FFFFFF",
               borderRadius: "18px",
               padding: "16px",
-              boxShadow:
-                "0 4px 12px rgba(0,0,0,0.08)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
             <div>
@@ -155,7 +162,16 @@ export default function Admin() {
             </div>
 
             <button
-              onClick={() => loadMessages(conversation.id)}
+              onClick={() => {
+                console.log(
+                  "CLICK",
+                  conversation.id
+                );
+
+                loadMessages(
+                  conversation.id
+                );
+              }}
               style={{
                 marginTop: "12px",
                 padding: "10px 16px",
@@ -169,10 +185,10 @@ export default function Admin() {
             >
               Открыть чат
             </button>
-
           </div>
         ))}
       </div>
+
       {selectedConversation && (
         <div
           style={{
@@ -180,10 +196,13 @@ export default function Admin() {
             background: "#fff",
             borderRadius: "18px",
             padding: "20px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+            boxShadow:
+              "0 4px 12px rgba(0,0,0,0.08)",
           }}
         >
-          <h2>Чат</h2>
+          <h2>
+            Чат #{selectedConversation}
+          </h2>
 
           {messages.map((msg) => (
             <div
@@ -198,7 +217,9 @@ export default function Admin() {
                     : "#dff4d1",
               }}
             >
-              <strong>{msg.sender}</strong>
+              <strong>
+                {msg.sender}
+              </strong>
 
               <div>
                 {msg.message}
@@ -207,6 +228,25 @@ export default function Admin() {
           ))}
         </div>
       )}
+
+      <div
+        style={{
+          marginTop: "30px",
+          background: "#fff",
+          padding: "20px",
+          borderRadius: "18px",
+        }}
+      >
+        <h3>DEBUG MESSAGES</h3>
+
+        <pre>
+          {JSON.stringify(
+            messages,
+            null,
+            2
+          )}
+        </pre>
+      </div>
     </div>
   );
 }
