@@ -62,11 +62,6 @@ export default function Support() {
 
             if (messageError) throw messageError;
 
-            localStorage.setItem(
-                "support_conversation",
-                conversation.id
-            );
-
             await fetch("/api/sendTelegram", {
                 method: "POST",
                 headers: {
