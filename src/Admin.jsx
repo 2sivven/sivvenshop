@@ -6,6 +6,7 @@ export default function Admin() {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [reply, setReply] = useState("");
 
   useEffect(() => {
     loadOrders();
@@ -59,6 +60,30 @@ export default function Admin() {
 
     setMessages(data || []);
     setSelectedConversation(conversationId);
+  }
+
+  async function sendReply() {
+    if (!reply.trim()) return;
+
+    const { error } = await supabase
+      .from("support_messages")
+      .insert([
+        {
+          conversation_id: selectedConversation,
+          sender: "admin",
+          message: reply,
+        },
+      ]);
+
+    if (error) {
+      console.error(error);
+      alert("Ошибка отправки");
+      return;
+    }
+
+    setReply("");
+
+    loadMessages(selectedConversation);
   }
 
   return (
@@ -226,6 +251,39 @@ export default function Admin() {
               </div>
             </div>
           ))}
+
+          <textarea
+            value={reply}
+            onChange={(e) =>
+              setReply(e.target.value)
+            }
+            placeholder="Ответ клиенту..."
+            rows={4}
+            style={{
+              width: "100%",
+              marginTop: "20px",
+              padding: "12px",
+              borderRadius: "12px",
+              border: "1px solid #ddd",
+              boxSizing: "border-box",
+            }}
+          />
+
+          <button
+            onClick={sendReply}
+            style={{
+              marginTop: "12px",
+              padding: "12px 20px",
+              border: "none",
+              borderRadius: "12px",
+              background: "#7CA917",
+              color: "#fff",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
+            Отправить ответ
+          </button>
         </div>
       )}
 
