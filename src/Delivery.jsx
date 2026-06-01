@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import TopMenu from "./TopMenu";
 
 export default function Delivery() {
   const navigate = useNavigate();
@@ -8,45 +7,127 @@ export default function Delivery() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#F5F5F2",
-        padding: "40px",
+        backgroundImage: "url('/dead-grass.png')",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        padding: "22px",
+        color: "white",
+        fontFamily: "SF Pro Display, sans-serif",
+        boxSizing: "border-box",
       }}
     >
-      <button onClick={() => navigate(-1)}>
-        Назад
-      </button>
+      {/* Верхняя панель */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "28px",
+        }}
+      >
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            width: "46px",
+            height: "46px",
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(0,0,0,0.35)",
+            backdropFilter: "blur(8px)",
+            color: "white",
+            fontSize: "28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          ↶
+        </button>
+      </div>
 
-      <TopMenu />
+      {/* Карточка */}
+      <div
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(108,94,72,0.58) 0%, rgba(74,64,48,0.72) 100%)",
+          backdropFilter: "blur(18px)",
+          border: "1px solid rgba(255,255,255,0.04)",
+          borderRadius: "32px",
+          padding: "28px",
+          boxShadow:
+            "0 10px 24px rgba(0,0,0,0.16)",
+        }}
+      >
+        <h1
+          style={{
+            marginTop: 0,
+            marginBottom: "24px",
+            fontSize: "32px",
+            fontWeight: 700,
+          }}
+        >
+          Оплата и доставка
+        </h1>
 
-      <h1>Оплата и доставка</h1>
+        <p
+          style={{
+            lineHeight: 1.8,
+            opacity: 0.92,
+            marginBottom: "18px",
+          }}
+        >
+          Доставка осуществляется по всей территории
+          Республики Молдова через Nova Post.
+        </p>
 
-      <p>
-        Оплата заказов производится после оформления заказа
-        через доступные платежные методы.
-      </p>
+        <p
+          style={{
+            lineHeight: 1.8,
+            opacity: 0.92,
+            marginBottom: "18px",
+          }}
+        >
+          Стоимость доставки составляет
+          <strong> 50 MDL </strong>
+          и автоматически добавляется к стоимости заказа
+          при оформлении.
+        </p>
 
-      <h2>Доставка</h2>
+        <p
+          style={{
+            lineHeight: 1.8,
+            opacity: 0.92,
+            marginBottom: "18px",
+          }}
+        >
+          Средний срок доставки составляет
+          <strong> 1–2 рабочих дня </strong>
+          после подтверждения заказа.
+        </p>
 
-      <p>
-        Доставка осуществляется по территории Республики Молдова.
-      </p>
+        <p
+          style={{
+            lineHeight: 1.8,
+            opacity: 0.92,
+            marginBottom: "18px",
+          }}
+        >
+          В выходные и праздничные дни сроки доставки
+          могут быть увеличены.
+        </p>
 
-      <p>
-        Срок доставки: 1–3 рабочих дня.
-      </p>
-
-      <h2>Возврат</h2>
-
-      <p>
-        Возврат товара осуществляется в соответствии
-        с действующим законодательством Республики Молдова.
-      </p>
-
-      <h2>Контакты</h2>
-
-      <p>
-        support@sivvenshop.com
-      </p>
+        <p
+          style={{
+            lineHeight: 1.8,
+            opacity: 0.92,
+            marginBottom: 0,
+          }}
+        >
+          После отправки заказа клиент получает
+          информацию для отслеживания доставки.
+        </p>
+      </div>
     </div>
   );
 }
