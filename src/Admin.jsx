@@ -4,6 +4,8 @@ import { supabase } from "./supabase";
 export default function Admin() {
   const [orders, setOrders] = useState([]);
   const [conversations, setConversations] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -130,6 +132,22 @@ export default function Admin() {
             <div>
               Статус: {conversation.status}
             </div>
+
+            <button
+              style={{
+                marginTop: "12px",
+                padding: "10px 16px",
+                borderRadius: "10px",
+                border: "none",
+                cursor: "pointer",
+                background: "#7CA917",
+                color: "#fff",
+                fontWeight: "600",
+              }}
+            >
+              Открыть чат
+            </button>
+
           </div>
         ))}
       </div>
