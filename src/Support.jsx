@@ -18,9 +18,16 @@ export default function Support() {
         setSending(true);
 
         try {
-            // создаём диалог
-            const { data: conversation, error: conversationError } =
-                await supabase
+            let conversationId =
+                localStorage.getItem(
+                    "support_conversation"
+                );
+
+            if (!conversationId) {
+                const {
+                    data: conversation,
+                    error: conversationError,
+                } = await supabase
                     .from("support_conversations")
                     .insert([
                         {
@@ -30,7 +37,16 @@ export default function Support() {
                     .select()
                     .single();
 
-            if (conversationError) throw conversationError;
+                if (conversationError)
+                    throw conversationError;
+
+                conversationId = conversation.id;
+
+                localStorage.setItem(
+                    "support_conversation",
+                    conversationId
+                );
+            }
 
             // создаём первое сообщение
             const { error: messageError } =
@@ -38,7 +54,7 @@ export default function Support() {
                     .from("support_messages")
                     .insert([
                         {
-                            conversation_id: conversation.id,
+                            conversation_id: conversationId,
                             sender: "client",
                             message: message,
                         },
