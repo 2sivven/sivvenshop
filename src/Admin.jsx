@@ -147,15 +147,6 @@ export default function Admin() {
 
       <div
         style={{
-          marginBottom: "20px",
-          fontWeight: "bold",
-        }}
-      >
-        selectedConversation: {String(selectedConversation)}
-      </div>
-
-      <div
-        style={{
           display: "flex",
           flexDirection: "column",
           gap: "12px",
@@ -210,100 +201,81 @@ export default function Admin() {
             >
               Открыть чат
             </button>
+
+            {selectedConversation === conversation.id && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  background: "#f8f8f8",
+                  padding: "20px",
+                  borderRadius: "12px",
+                }}
+              >
+                <h3>
+                  Чат #{conversation.id}
+                </h3>
+
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    style={{
+                      marginBottom: "12px",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      background:
+                        msg.sender === "client"
+                          ? "#f3f3f3"
+                          : "#dff4d1",
+                    }}
+                  >
+                    <strong>
+                      {msg.sender === "client"
+                        ? "Клиент"
+                        : "Служба поддержки"}
+                    </strong>
+
+                    <div>
+                      {msg.message}
+                    </div>
+                  </div>
+                ))}
+
+                <textarea
+                  value={reply}
+                  onChange={(e) =>
+                    setReply(e.target.value)
+                  }
+                  placeholder="Ответ клиенту..."
+                  rows={4}
+                  style={{
+                    width: "100%",
+                    marginTop: "20px",
+                    padding: "12px",
+                    borderRadius: "12px",
+                    border: "1px solid #ddd",
+                    boxSizing: "border-box",
+                  }}
+                />
+
+                <button
+                  onClick={sendReply}
+                  style={{
+                    marginTop: "12px",
+                    padding: "12px 20px",
+                    border: "none",
+                    borderRadius: "12px",
+                    background: "#7CA917",
+                    color: "#fff",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                  }}
+                >
+                  Отправить ответ
+                </button>
+              </div>
+            )}
           </div>
         ))}
-      </div>
-
-      {selectedConversation && (
-        <div
-          style={{
-            marginTop: "30px",
-            background: "#fff",
-            borderRadius: "18px",
-            padding: "20px",
-            boxShadow:
-              "0 4px 12px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h2>
-            Чат #{selectedConversation}
-          </h2>
-
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                marginBottom: "12px",
-                padding: "12px",
-                borderRadius: "12px",
-                background:
-                  msg.sender === "client"
-                    ? "#f3f3f3"
-                    : "#dff4d1",
-              }}
-            >
-              <strong>
-                {msg.sender}
-              </strong>
-
-              <div>
-                {msg.message}
-              </div>
-            </div>
-          ))}
-
-          <textarea
-            value={reply}
-            onChange={(e) =>
-              setReply(e.target.value)
-            }
-            placeholder="Ответ клиенту..."
-            rows={4}
-            style={{
-              width: "100%",
-              marginTop: "20px",
-              padding: "12px",
-              borderRadius: "12px",
-              border: "1px solid #ddd",
-              boxSizing: "border-box",
-            }}
-          />
-
-          <button
-            onClick={sendReply}
-            style={{
-              marginTop: "12px",
-              padding: "12px 20px",
-              border: "none",
-              borderRadius: "12px",
-              background: "#7CA917",
-              color: "#fff",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
-            Отправить ответ
-          </button>
-        </div>
-      )}
-
-      <div
-        style={{
-          marginTop: "30px",
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "18px",
-        }}
-      >
-        <h3>DEBUG MESSAGES</h3>
-
-        <pre>
-          {JSON.stringify(
-            messages,
-            null,
-            2
-          )}
-        </pre>
       </div>
     </div>
   );
