@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabase";
 
@@ -8,6 +8,59 @@ export default function Support() {
     const [name, setName] = useState("");
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [conversationId, setConversationId] = useState(null);
+
+    useEffect(() => {
+        const savedConversation =
+            localStorage.getItem(
+                "support_conversation"
+            );
+
+        if (savedConversation) {
+            setConversationId(
+                Number(savedConversation)
+            );
+
+            loadMessages(
+                Number(savedConversation)
+            );
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!conversationId) return;
+
+        const interval = setInterval(() => {
+            loadMessages(conversationId);
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, [conversationId]);
+
+    async function loadMessages(
+        currentConversationId
+    ) {
+        const { data, error } =
+            await supabase
+                .from("support_messages")
+                .select("*")
+                .eq(
+                    "conversation_id",
+                    currentConversationId
+                )
+                .order(
+                    "created_at",
+                    { ascending: true }
+                );
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        setMessages(data || []);
+    }
 
     const sendMessage = async () => {
         if (!name.trim() || !message.trim()) {
@@ -46,6 +99,10 @@ export default function Support() {
                     "support_conversation",
                     conversationId
                 );
+
+                setConversationId(
+                    Number(conversationId)
+                );
             }
 
             // создаём первое сообщение
@@ -77,8 +134,11 @@ export default function Support() {
 
             alert("Сообщение отправлено");
 
-            setName("");
             setMessage("");
+
+            loadMessages(
+                Number(conversationId)
+            );
         } catch (err) {
             console.error(err);
             alert("Ошибка отправки");
@@ -119,6 +179,48 @@ export default function Support() {
             >
                 Поддержка
             </h1>
+
+            {messages.length > 0 && (
+                <div
+                    style={{
+                        background: "#fff",
+                        borderRadius: "24px",
+                        padding: "24px",
+                        marginBottom: "20px",
+                        boxShadow:
+                            "0 10px 30px rgba(0,0,0,0.06)",
+                    }}
+                >
+                    {messages.map((msg) => (
+                        <div
+                            key={msg.id}
+                            style={{
+                                marginBottom: "12px",
+                                padding: "12px",
+                                borderRadius: "12px",
+                                background:
+                                    msg.sender === "client"
+                                        ? "#f3f3f3"
+                                        : "#dff4d1",
+                            }}
+                        >
+                            <strong>
+                                {msg.sender === "client"
+                                    ? "Вы"
+                                    : "Служба поддержки"}
+                            </strong>
+
+                            <div
+                                style={{
+                                    marginTop: "6px",
+                                }}
+                            >
+                                {msg.message}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <div
                 style={{
