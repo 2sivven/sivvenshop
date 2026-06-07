@@ -66,148 +66,154 @@ async function startServer() {
   // Polling/Webhook debugging store
   const webhookHistory: any[] = [];
 
-  // TELEGRAM LONG POLLING IMPLEMENTATION
-  async function startTelegramPolling() {
-    // Check if running in development (Google AI Studio) to prevent 409 conflict with Render/production
+  // TELEGRAM INTEGRATION ENGINE (WEBHOOK OR LONG POLLING BACKEND)
+  async function initializeTelegramIntegration(): Promise<{ mode: string; detail: string }> {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken || botToken.includes("123456789:ABCdefGhIJKlMnOpQrStUvWxYz") || botToken === "") {
+      console.log("[Telegram Integration] Bot token is not configured or is a placeholder. Integration disabled.");
+      return { mode: "disabled", detail: "Токен не настроен или в демо-режиме" };
+    }
+
+    // Determine environments
     const isDevPreview = process.env.APP_URL && (
       process.env.APP_URL.includes("europe-west2.run.app") || 
       process.env.APP_URL.includes("ais-dev") || 
       process.env.APP_URL.includes("ais-pre")
     );
-    
-    if (isDevPreview) {
-      console.log("[Telegram Polling] Polling is disabled in the AI Studio development environment to prevent 409 conflicts with your live production site on Render.");
-      return;
-    }
 
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!botToken || botToken.includes("123456789:ABCdefGhIJKlMnOpQrStUvWxYz") || botToken === "") {
-      console.log("[Telegram Polling] Bot token is not configured or is a placeholder. Polling disabled.");
-      return;
-    }
+    // Active Render URL auto-detection
+    const isRender = !!process.env.RENDER || !!process.env.RENDER_EXTERNAL_URL;
+    const renderUrl = process.env.RENDER_EXTERNAL_URL;
 
-    console.log("[Telegram Polling] Initializing independently of Make.com. Deleting old webhook...");
-    try {
-      const delRes = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook?drop_pending_updates=true`);
-      const delData: any = await delRes.json();
-      console.log("[Telegram Polling] Webhook delete response:", delData);
-    } catch (err) {
-      console.error("[Telegram Polling] Failed to clear webhook prior to polling:", err);
-    }
-
-    let offset = 0;
-    console.log("[Telegram Polling] Polling started successfully. Listening for replies in Telegram groups.");
-
-    // Simple status track in history
-    webhookHistory.push({
-      timestamp: new Date().toISOString(),
-      status: "polling_started",
-      message: "Независимый сервис Long Polling успешно запущен."
-    });
-
-    while (true) {
+    // SCENARIO 1: We are running in production on Render!
+    if (isRender && renderUrl) {
+      const webhookUrl = `${renderUrl}/api/telegram/webhook`;
+      console.log(`[Telegram Integration] Running on Render. Registering Webhook mode: ${webhookUrl}`);
       try {
-        const url = `https://api.telegram.org/bot${botToken}/getUpdates?offset=${offset}&timeout=25&allowed_updates=["message"]`;
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Telegram API responded with HTTP status ${response.status}`);
-        }
-        
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: webhookUrl,
+            allowed_updates: ["message"],
+            drop_pending_updates: true
+          })
+        });
+
         const data: any = await response.json();
-        if (!data.ok) {
-          throw new Error(data.description || "Telegram returned OK: false");
-        }
-
-        const updates = data.result || [];
-        for (const update of updates) {
-          offset = update.update_id + 1;
-
-          const historyEntry: any = {
+        if (data.ok) {
+          console.log("[Telegram Integration] Webhook established successfully!", data);
+          webhookHistory.push({
             timestamp: new Date().toISOString(),
-            body: update,
-            status: "polling_received",
-            error: null,
-            extractedId: null,
-            savedMessage: null
-          };
-
-          webhookHistory.push(historyEntry);
-          if (webhookHistory.length > 30) webhookHistory.shift();
-
-          const message = update.message;
-          if (!message) {
-            historyEntry.status = "ignored_no_message";
-            continue;
-          }
-
-          const replyTo = message.reply_to_message;
-          const replyText = message.text;
-
-          if (!replyTo) {
-            historyEntry.status = "ignored_not_a_reply";
-            continue;
-          }
-
-          if (!replyText) {
-            historyEntry.status = "ignored_no_text";
-            continue;
-          }
-
-          // Extract original message text to find the conversation ID
-          const originalText = replyTo.text || replyTo.caption || "";
-          const match = originalText.match(/(?:ID|ID диалога):\s*([A-Za-z0-9-]+)/i);
-          if (!match) {
-            console.log(`[Telegram Polling] Reply found but no ID: "${originalText.substring(0, 60)}..."`);
-            historyEntry.status = "ignored_no_id_match";
-            historyEntry.original_message_text = originalText;
-            continue;
-          }
-
-          const conversationIdStr = match[1];
-          const conversationId = parseInt(conversationIdStr, 10);
-          if (isNaN(conversationId)) {
-            console.log(`[Telegram Polling] Extracted conversation ID is not a valid number: ${conversationIdStr}`);
-            historyEntry.status = "ignored_invalid_id";
-            continue;
-          }
-          
-          historyEntry.extractedId = conversationId;
-          console.log(`[Telegram Polling] Extracted conversation ID: ${conversationId}. Saving reply: "${replyText}"`);
-
-          // Insert directly into Supabase support_messages with sender 'admin'
-          const { data: dbData, error: dbErr } = await supabase
-            .from("support_messages")
-            .insert([
-              {
-                conversation_id: conversationId,
-                sender: "admin",
-                message: replyText
-              }
-            ])
-            .select();
-
-          if (dbErr) {
-            console.error("[Telegram Polling] Supabase INSERT error:", JSON.stringify(dbErr, null, 2));
-            historyEntry.status = "supabase_error";
-            historyEntry.error = dbErr.message || JSON.stringify(dbErr);
-          } else {
-            console.log("[Telegram Polling] Successfully inserted support reply:", dbData);
-            historyEntry.status = "success";
-            historyEntry.savedMessage = dbData;
-          }
+            status: "webhook_setup_success",
+            message: `Вебхук успешно установлен для URL Render: ${webhookUrl}`
+          });
+          return { mode: "webhook", detail: `Вебхук активно слушает на ${webhookUrl}` };
+        } else {
+          throw new Error(data.description || "Failed to set webhook");
         }
       } catch (err: any) {
-        console.error("[Telegram Polling] Error in polling loop:", err.message || err);
-        // Wait 6 seconds before retrying on general errors
-        await new Promise(resolve => setTimeout(resolve, 6000));
+        console.error("[Telegram Integration] Failed to setup Webhook on Render:", err.message || err);
+        return { mode: "webhook-error", detail: `Ошибка регистрации: ${err.message}` };
       }
-      // Breathing time between calls
-      await new Promise(resolve => setTimeout(resolve, 200));
     }
+
+    // SCENARIO 2: Running in AI Studio preview (Google sandbox)
+    if (isDevPreview) {
+      console.log("[Telegram Integration] Polling is disabled in the AI Studio environment to prevent 409 conflicts with Render/Production.");
+      return { mode: "disabled-sandbox", detail: "Выключено в AI Studio для избежания конфликтов 409" };
+    }
+
+    // SCENARIO 3: Local developers or other hosting (Fallback to Long Polling)
+    console.log("[Telegram Integration] Starting fallback autonomous Long Polling...");
+    try {
+      console.log("[Telegram Integration] Deleting webhook to unlock polling...");
+      await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook?drop_pending_updates=true`);
+    } catch (err: any) {
+      console.warn("[Telegram Integration] Webhook clear failed prior to polling:", err.message || err);
+    }
+
+    // Start background polling loop asynchronously (do not block startServer init!)
+    (async () => {
+      let offset = 0;
+      webhookHistory.push({
+        timestamp: new Date().toISOString(),
+        status: "polling_started",
+        message: "Автономный фоновый опрос (Long Polling) успешно запущен."
+      });
+
+      while (true) {
+        try {
+          const url = `https://api.telegram.org/bot${botToken}/getUpdates?offset=${offset}&timeout=25&allowed_updates=["message"]`;
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP status ${response.status}`);
+          }
+          const data: any = await response.json();
+          if (!data.ok) {
+            throw new Error(data.description || "OK: false");
+          }
+
+          const updates = data.result || [];
+          for (const update of updates) {
+            offset = update.update_id + 1;
+
+            const historyEntry: any = {
+              timestamp: new Date().toISOString(),
+              body: update,
+              status: "polling_received",
+              error: null,
+              extractedId: null,
+              savedMessage: null
+            };
+
+            webhookHistory.push(historyEntry);
+            if (webhookHistory.length > 30) webhookHistory.shift();
+
+            const message = update.message;
+            if (!message) continue;
+
+            const replyTo = message.reply_to_message;
+            const replyText = message.text;
+
+            if (!replyTo || !replyText) continue;
+
+            const originalText = replyTo.text || replyTo.caption || "";
+            const match = originalText.match(/(?:ID|ID диалога):\s*([A-Za-z0-9-]+)/i);
+            if (!match) continue;
+
+            const conversationIdStr = match[1];
+            const conversationId = parseInt(conversationIdStr, 10);
+            if (isNaN(conversationId)) continue;
+
+            historyEntry.extractedId = conversationId;
+
+            const { data: dbData, error: dbErr } = await supabase
+              .from("support_messages")
+              .insert([{ conversation_id: conversationId, sender: "admin", message: replyText }])
+              .select();
+
+            if (dbErr) {
+              historyEntry.status = "supabase_error";
+              historyEntry.error = dbErr.message;
+            } else {
+              historyEntry.status = "success";
+              historyEntry.savedMessage = dbData;
+            }
+          }
+        } catch (err: any) {
+          console.error("[Telegram Polling Loop Exception]:", err.message || err);
+          await new Promise(resolve => setTimeout(resolve, 8000));
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    })();
+
+    return { mode: "polling", detail: "Автономный опрос (Long Polling) запущен в фоновом режиме" };
   }
 
-  // Start back-end polling asynchronously
-  startTelegramPolling();
+  // Trigger integration initialization asynchronously on boot
+  initializeTelegramIntegration();
 
   // 1. Health check endpoint
   app.get("/api/health", async (req, res) => {
@@ -252,36 +258,100 @@ async function startServer() {
     }
   });
 
-  // 3. Telegram Webhook: Legacy endpoint. Since we use Long Polling, webhook replies are ignored here.
+  // 3. Telegram Webhook: Active and used when running on Render!
   app.post("/api/telegram/webhook", async (req, res) => {
-    console.log("[Telegram Webhook] Received incoming webhook post. Ignoring as we use Long Polling mode.");
-    return res.json({ success: true, remark: "Long Polling is active. This webhook payload was ignored." });
-  });
-
-  // 3.1 Setup Webhook route - converted to Webhook Cleanser and Long Polling force-trigger
-  app.post("/api/telegram/setupWebhook", async (req, res) => {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!botToken || botToken.includes("123456789:ABCdefGhIJKlMnOpQrStUvWxYz") || botToken === "") {
-      return res.status(400).json({ error: "Токен Telegram не настроен или содержит плейсхолдер. Настройте его в Secrets!" });
+    const update = req.body;
+    if (!update) {
+      return res.status(400).json({ error: "Empty payload received" });
     }
 
+    const historyEntry: any = {
+      timestamp: new Date().toISOString(),
+      body: update,
+      status: "webhook_received",
+      error: null,
+      extractedId: null,
+      savedMessage: null
+    };
+
+    webhookHistory.push(historyEntry);
+    if (webhookHistory.length > 30) webhookHistory.shift();
+
+    const message = update.message;
+    if (!message) {
+      historyEntry.status = "ignored_no_message";
+      return res.json({ success: true, remark: "No message parameter" });
+    }
+
+    const replyTo = message.reply_to_message;
+    const replyText = message.text;
+
+    if (!replyTo) {
+      historyEntry.status = "ignored_not_reply";
+      return res.json({ success: true, remark: "Not a reply to any message" });
+    }
+
+    if (!replyText) {
+      historyEntry.status = "ignored_no_text";
+      return res.json({ success: true, remark: "Empty update text" });
+    }
+
+    // Extract conversation ID from the original admin message
+    const originalText = replyTo.text || replyTo.caption || "";
+    const match = originalText.match(/(?:ID|ID диалога):\s*([A-Za-z0-9-]+)/i);
+    if (!match) {
+      console.log(`[Telegram Webhook] Reply detected but no match for ID: "${originalText.substring(0, 60)}..."`);
+      historyEntry.status = "ignored_no_id_match";
+      return res.json({ success: true, remark: "Dialogue ID not found in original message" });
+    }
+
+    const conversationIdStr = match[1];
+    const conversationId = parseInt(conversationIdStr, 10);
+    if (isNaN(conversationId)) {
+      console.log(`[Telegram Webhook] Extracted text ID is non-numeric: ${conversationIdStr}`);
+      historyEntry.status = "ignored_invalid_id";
+      return res.json({ success: true, remark: "Dialogue ID is not a valid number" });
+    }
+
+    historyEntry.extractedId = conversationId;
+    console.log(`[Telegram Webhook] Success! Extracted chat ID: ${conversationId}. Direct insert message: "${replyText}"`);
+
+    // Record the reply directly to Support Messages inside Supabase
+    const { data: dbData, error: dbErr } = await supabase
+      .from("support_messages")
+      .insert([
+        {
+          conversation_id: conversationId,
+          sender: "admin",
+          message: replyText
+        }
+      ])
+      .select();
+
+    if (dbErr) {
+      console.error("[Telegram Webhook] Supabase INSERT error:", JSON.stringify(dbErr, null, 2));
+      historyEntry.status = "supabase_error";
+      historyEntry.error = dbErr.message || JSON.stringify(dbErr);
+      return res.status(500).json({ error: "Failed to persist to database", details: dbErr });
+    } else {
+      console.log("[Telegram Webhook] Successfully registered support admin response:", dbData);
+      historyEntry.status = "success";
+      historyEntry.savedMessage = dbData;
+      return res.json({ success: true, saved: dbData });
+    }
+  });
+
+  // 3.1 Setup / Force Refresh Route
+  app.post("/api/telegram/setupWebhook", async (req, res) => {
     try {
-      console.log(`[Telegram Setup] Deleting old Telegram webhooks to guarantee Long Polling operates cleanly...`);
-      const delWebhookRes = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook?drop_pending_updates=true`);
-      const delWebhookData: any = await delWebhookRes.json();
-
-      if (!delWebhookData.ok) {
-        throw new Error(delWebhookData.description || "Telegram returned an error during deleteWebhook");
-      }
-
+      const resData = await initializeTelegramIntegration();
       return res.json({ 
         success: true, 
-        message: "Вебхук Telegram успешно удален/сброшен! Наш сервер переведен на автономный фоновый опрос (Long Polling). Процесс полностью независим от внешних сервисов утилит (таких как Make.com).",
-        telegramResponse: delWebhookData 
+        message: "Инициализация интеграции Telegram успешно перезапущена!", 
+        status: resData 
       });
     } catch (err: any) {
-      console.error("[Telegram Setup] Error dropping webhook:", err);
-      return res.status(500).json({ error: err.message || "Не удалось сбросить вебхук в Телеграм" });
+      return res.status(500).json({ error: err.message });
     }
   });
 
@@ -398,7 +468,6 @@ async function startServer() {
     }
 
     // 2. Supabase Audit
-    // Is user using customized url/key?
     const rawUrl = (process.env.SUPABASE_URL || "").trim();
     const rawKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "").trim();
 
