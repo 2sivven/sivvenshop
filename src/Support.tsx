@@ -20,8 +20,28 @@ export default function Support() {
   const [sending, setSending] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [startingChat, setStartingChat] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<string>("calc(100vh - 20px)");
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Dynamic viewport height tracker to handle mobile digital keyboards gracefully
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    
+    const handleViewportResize = () => {
+      // Subtract 20px corresponding to 10px margin-top and 10px margin-bottom
+      setViewportHeight(`${window.visualViewport!.height - 20}px`);
+    };
+
+    window.visualViewport.addEventListener("resize", handleViewportResize);
+    window.visualViewport.addEventListener("scroll", handleViewportResize);
+    handleViewportResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", handleViewportResize);
+      window.visualViewport?.removeEventListener("scroll", handleViewportResize);
+    };
+  }, []);
 
   // Load existing session on mount
   useEffect(() => {
@@ -279,7 +299,7 @@ export default function Support() {
   return (
     <div
       style={{
-        height: "calc(100vh - 20px)",
+        height: viewportHeight,
         backgroundImage: "url('/dead-grass.png')",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -447,7 +467,7 @@ export default function Support() {
                     borderRadius: "16px",
                     border: "1px solid rgba(255, 255, 255, 0.12)",
                     background: "rgba(0, 0, 0, 0.35)",
-                    fontSize: "15px",
+                    fontSize: "16px",
                     boxSizing: "border-box",
                     color: "white",
                     outline: "none",
@@ -723,7 +743,7 @@ export default function Support() {
                   borderRadius: "24px",
                   border: "1px solid rgba(255, 255, 255, 0.12)",
                   background: "rgba(0, 0, 0, 0.45)",
-                  fontSize: "14.5px",
+                  fontSize: "16px",
                   color: "#FFFFFF",
                   outline: "none",
                   caretColor: "#9ECE52",
