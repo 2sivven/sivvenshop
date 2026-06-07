@@ -68,6 +68,18 @@ async function startServer() {
 
   // TELEGRAM LONG POLLING IMPLEMENTATION
   async function startTelegramPolling() {
+    // Check if running in development (Google AI Studio) to prevent 409 conflict with Render/production
+    const isDevPreview = process.env.APP_URL && (
+      process.env.APP_URL.includes("europe-west2.run.app") || 
+      process.env.APP_URL.includes("ais-dev") || 
+      process.env.APP_URL.includes("ais-pre")
+    );
+    
+    if (isDevPreview) {
+      console.log("[Telegram Polling] Polling is disabled in the AI Studio development environment to prevent 409 conflicts with your live production site on Render.");
+      return;
+    }
+
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken || botToken.includes("123456789:ABCdefGhIJKlMnOpQrStUvWxYz") || botToken === "") {
       console.log("[Telegram Polling] Bot token is not configured or is a placeholder. Polling disabled.");
