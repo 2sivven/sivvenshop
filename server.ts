@@ -63,6 +63,14 @@ async function startServer() {
   // Parser for JSON payloads
   app.use(express.json());
 
+  // Simplified Request Logger
+  app.use((req, res, next) => {
+    if (!req.url.startsWith("/assets/") && !req.url.endsWith(".png") && !req.url.endsWith(".ico") && !req.url.endsWith(".svg")) {
+      console.log(`[HTTP Request] ${req.method} ${req.url} (IP: ${req.ip})`);
+    }
+    next();
+  });
+
   // Polling/Webhook debugging store
   const webhookHistory: any[] = [];
 
@@ -468,6 +476,7 @@ async function startServer() {
     }
 
     // 2. Supabase Audit
+    // Is user using customized url/key?
     const rawUrl = (process.env.SUPABASE_URL || "").trim();
     const rawKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "").trim();
 

@@ -210,7 +210,7 @@ export default function Support() {
           localStorage.removeItem("last_completed_conversation");
         }
 
-        await fetch("/api/sendTelegram", {
+        const response = await fetch("/api/sendTelegram", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -223,8 +223,13 @@ export default function Support() {
               `💬 Текст: ${currentText}`,
           }),
         });
-      } catch (telegramErr) {
-        console.warn("Telegram notification fell back, message saved in DB.");
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP error ${response.status}`);
+        }
+      } catch (telegramErr: any) {
+        console.warn("Telegram notification fell back, message saved in DB:", telegramErr.message || telegramErr);
       }
     } catch (err) {
       console.error("Error sending message:", err);
@@ -618,8 +623,8 @@ export default function Support() {
                           fontSize: "11px",
                           fontWeight: 600,
                           color: isUser
-                            ? "rgba(158, 206, 82, 0.9)"
-                            : "rgba(255, 255, 255, 0.6)",
+                             ? "rgba(158, 206, 82, 0.9)"
+                             : "rgba(255, 255, 255, 0.6)",
                           marginBottom: "4px",
                           marginLeft: isUser ? "0" : "8px",
                           marginRight: isUser ? "8px" : "0",
