@@ -223,23 +223,25 @@ async function startServer() {
   // Trigger integration initialization asynchronously on boot
   initializeTelegramIntegration();
 
-  // Keep track of recently forwarded message contents in-memory to prevent duplicate Telegram alerts if both client and server triggers execute
-  const recentlyForwardedTexts = new Set<string>();
+  // Keep track of recently forwarded message IDs in-memory to prevent duplicate Telegram alerts
+  const forwardedMessageIds = new Set<string>();
 
-  async function sendTelegramMessageDeduplicated(textToSend: string): Promise<boolean> {
+  async function sendTelegramMessageDeduplicated(textToSend: string, messageId?: string | number): Promise<boolean> {
     const trimmedText = textToSend.trim();
-    if (recentlyForwardedTexts.has(trimmedText)) {
-      console.log("[Telegram Deduplicator] Skip sending duplicate message content:", trimmedText.split("\n")[0]);
-      return true; // Always return success so the frontend continues quietly
+
+    if (messageId) {
+      const idStr = String(messageId);
+      if (forwardedMessageIds.has(idStr)) {
+        console.log("[Telegram Deduplicator] Skip sending duplicate message ID:", idStr);
+        return true; // Return success so frontend knows it was handled
+      }
+
+      forwardedMessageIds.add(idStr);
+      // Keep ID in cache for 60 seconds, then clear
+      setTimeout(() => {
+        forwardedMessageIds.delete(idStr);
+      }, 60000);
     }
-
-    // Add to cache
-    recentlyForwardedTexts.add(trimmedText);
-
-    // Keep active to discard duplicates for 15 seconds, then clear
-    setTimeout(() => {
-      recentlyForwardedTexts.delete(trimmedText);
-    }, 15000);
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -277,7 +279,7 @@ async function startServer() {
 
   // 1.5 Secure Bypass route to avoid adblock blocks (generic name without the word "telegram")
   app.post("/api/support-notify", async (req, res) => {
-    const { text } = req.body;
+    const { text, messageId } = req.body;
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -291,8 +293,8 @@ async function startServer() {
     }
 
     try {
-      console.log("[Support Notify Route] Forwarding message from client request (deduplicated)...");
-      const success = await sendTelegramMessageDeduplicated(text);
+      console.log(`[Support Notify Route] Forwarding message from client request (messageId: ${messageId || "not provided"})...`);
+      const success = await sendTelegramMessageDeduplicated(text, messageId);
       if (!success) {
         throw new Error("Deduplicated sending failed");
       }

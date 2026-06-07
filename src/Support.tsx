@@ -255,7 +255,7 @@ export default function Support() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messageId: insertedMessageId,
+          messageId: insertedMessageId ? String(insertedMessageId) : tempId,
           text:
             prefix +
             `📨 Сообщение в чате поддержки (ID: ${conversationId})\n\n` +
