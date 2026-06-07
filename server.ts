@@ -223,8 +223,52 @@ async function startServer() {
   // Trigger integration initialization asynchronously on boot
   initializeTelegramIntegration();
 
-  // Keep track of recently forwarded message IDs in-memory to prevent duplicate Telegram alerts if both client and server triggers succeed
-  const forwardedMessageIds = new Set<number>();
+  // Keep track of recently forwarded message contents in-memory to prevent duplicate Telegram alerts if both client and server triggers execute
+  const recentlyForwardedTexts = new Set<string>();
+
+  async function sendTelegramMessageDeduplicated(textToSend: string): Promise<boolean> {
+    const trimmedText = textToSend.trim();
+    if (recentlyForwardedTexts.has(trimmedText)) {
+      console.log("[Telegram Deduplicator] Skip sending duplicate message content:", trimmedText.split("\n")[0]);
+      return true; // Always return success so the frontend continues quietly
+    }
+
+    // Add to cache
+    recentlyForwardedTexts.add(trimmedText);
+
+    // Keep active to discard duplicates for 15 seconds, then clear
+    setTimeout(() => {
+      recentlyForwardedTexts.delete(trimmedText);
+    }, 15000);
+
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    if (!botToken || !chatId) {
+      console.warn("[Telegram Deduplicator] Cannot send: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID are not configured.");
+      return false;
+    }
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: trimmedText,
+        }),
+      });
+
+      const result: any = await response.json();
+      if (!result.ok) {
+        throw new Error(result.description || "OK is false");
+      }
+      return true;
+    } catch (err: any) {
+      console.error("[Telegram Deduplicator] Error calling Telegram API:", err.message || err);
+      return false;
+    }
+  }
 
   // Real-time server-side listener for client messages to notify Telegram automatically
   function startServerSupportMessagesListener() {
@@ -258,23 +302,6 @@ async function startServer() {
               return;
             }
 
-            const messageIdNum = parseInt(newMsg.id, 10);
-            if (!isNaN(messageIdNum) && forwardedMessageIds.has(messageIdNum)) {
-              console.log(`[Support Database Listener] Message ID ${newMsg.id} already forwarded. Skipping.`);
-              return;
-            }
-
-            if (!isNaN(messageIdNum)) {
-              forwardedMessageIds.add(messageIdNum);
-              // Clean up set size occasionally
-              if (forwardedMessageIds.size > 500) {
-                const firstElement = forwardedMessageIds.values().next().value;
-                if (firstElement !== undefined) {
-                  forwardedMessageIds.delete(firstElement);
-                }
-              }
-            }
-
             console.log(`[Support Database Listener] New client message detected in DB! ID: ${newMsg.id}, Convo ID: ${newMsg.conversation_id}, Message: "${newMsg.message}"`);
 
             // Fetch conversation to get client's name
@@ -295,32 +322,12 @@ async function startServer() {
               console.warn("[Support Database Listener] Exception fetching conversation info:", fetchErr);
             }
 
-            // Target chat
-            if (!botToken || !chatId) {
-              console.warn("[Support Database Listener] Cannot forward to Telegram: Bot/Chat credentials are not set on this server instance.");
-              return;
-            }
-
             const textToSend = `📨 Сообщение в чате поддержки (ID: ${newMsg.conversation_id})\n\n` +
                                `👤 Клиент: ${clientName}\n` +
                                `💬 Текст: ${newMsg.message}`;
 
-            console.log(`[Support Database Listener] Automatically forwarding message to Telegram Chat ${chatId}...`);
-            const tgResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: textToSend,
-              }),
-            });
-
-            const tgResult: any = await tgResponse.json();
-            if (tgResult.ok) {
-              console.log("[Support Database Listener] Realtime DB listener automatically sent notification to Telegram!");
-            } else {
-              console.error("[Support Database Listener] Telegram API error:", tgResult.description);
-            }
+            console.log(`[Support Database Listener] Automatically forwarding message to Telegram (deduplicated)...`);
+            await sendTelegramMessageDeduplicated(textToSend);
           } catch (err) {
             console.error("[Support Database Listener] Exception holding database real-time forwarder:", err);
           }
@@ -341,7 +348,7 @@ async function startServer() {
 
   // 1.5 Secure Bypass route to avoid adblock blocks (generic name without the word "telegram")
   app.post("/api/support-notify", async (req, res) => {
-    const { text, messageId } = req.body;
+    const { text } = req.body;
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -354,33 +361,12 @@ async function startServer() {
       return res.status(500).json({ error: "Telegram configuration is missing on the server" });
     }
 
-    if (messageId) {
-      const dbIdNum = parseInt(messageId, 10);
-      if (!isNaN(dbIdNum)) {
-        if (forwardedMessageIds.has(dbIdNum)) {
-          console.log(`[Support Notify Route] Message ID ${messageId} already posted. Skipping to prevent duplicate.`);
-          return res.json({ success: true, remark: "already_forwarded" });
-        }
-        forwardedMessageIds.add(dbIdNum);
-      }
-    }
-
     try {
-      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: text,
-        }),
-      });
-
-      const result = await response.json();
-      if (!result.ok) {
-        throw new Error(result.description || "Failed to send message to Telegram");
+      console.log("[Support Notify Route] Forwarding message from client request (deduplicated)...");
+      const success = await sendTelegramMessageDeduplicated(text);
+      if (!success) {
+        throw new Error("Deduplicated sending failed");
       }
-
-      console.log("[Support Notify Route] Message sent successfully to Telegram from client client request");
       return res.json({ success: true });
     } catch (err: any) {
       console.error("[Support Notify Route] Error forwarding message:", err);
