@@ -223,9 +223,9 @@ async function startServer() {
   // Trigger integration initialization asynchronously on boot
   initializeTelegramIntegration();
 
-  // Keep track of recently forwarded message IDs and text signatures in-memory to prevent duplicate Telegram alerts
+  // Keep track of recently forwarded message IDs and key signatures in-memory to prevent duplicate Telegram alerts
   const forwardedMessageIds = new Set<string>();
-  const forwardedMessageTexts = new Set<string>();
+  const forwardedMessageKeys = new Set<string>();
 
   async function sendTelegramMessageDeduplicated(textToSend: string, messageId?: string | number): Promise<boolean> {
     const trimmedText = textToSend.trim();
@@ -246,15 +246,24 @@ async function startServer() {
       }
     }
 
-    // 2. Extra safety: Deduplicate by exact text signature to handle RLS select restrictions (when messageId is temporary)
-    const textSignature = trimmedText;
-    if (forwardedMessageTexts.has(textSignature)) {
-      console.log("[Telegram Deduplicator] Skip sending duplicate message by text signature match");
+    // Helper to get normalized key
+    const getNormalizedKey = (text: string): string => {
+      const idMatch = text.match(/в чате поддержки \(ID:\s*(\d+)\)/i);
+      const conversationId = idMatch ? idMatch[1] : "";
+      const textMatch = text.split(/💬 Текст:\s*/i);
+      const rawMessage = textMatch.length > 1 ? textMatch[1].trim() : text.trim();
+      return conversationId ? `convo_${conversationId}:${rawMessage}` : `raw:${rawMessage}`;
+    };
+
+    // 2. Extra safety: Deduplicate by exact normalized conversation + message content match to prevent concurrent channel collisions
+    const deduplicationKey = getNormalizedKey(trimmedText);
+    if (forwardedMessageKeys.has(deduplicationKey)) {
+      console.log("[Telegram Deduplicator] Skip sending duplicate message by normalized key match:", deduplicationKey);
       return true; // Return success
     }
-    forwardedMessageTexts.add(textSignature);
+    forwardedMessageKeys.add(deduplicationKey);
     setTimeout(() => {
-      forwardedMessageTexts.delete(textSignature);
+      forwardedMessageKeys.delete(deduplicationKey);
     }, 60000); // Keep content signature in cache for 60 seconds
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -287,7 +296,7 @@ async function startServer() {
       if (messageId) {
         forwardedMessageIds.delete(String(messageId));
       }
-      forwardedMessageTexts.delete(textSignature);
+      forwardedMessageKeys.delete(deduplicationKey);
       return false;
     }
   }
