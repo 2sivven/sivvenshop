@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function Contacts() {
   const navigate = useNavigate();
-
   return (
     <div
       style={{

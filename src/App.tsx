@@ -4,7 +4,6 @@ import Info from "./Info";
 import Reviews from "./Reviews";
 import Checkout from "./Checkout";
 import PrivacyPolicy from "./PrivacyPolicy";
-import Admin from "./Admin";
 import Contacts from "./Contacts";
 import Delivery from "./Delivery";
 import Support from "./Support";
@@ -19,7 +18,7 @@ export default function App() {
           <div
             style={{
               width: "calc(100% - 20px)",
-              minHeight: "100vh",
+              height: "calc(100vh - 20px)",
               backgroundColor: "#000",
               backgroundImage: "url('/grass.png')",
               borderRadius: "32px",
@@ -27,8 +26,7 @@ export default function App() {
               backgroundSize: "cover",
               backgroundPosition: "center",
               position: "relative",
-              overflowX: "hidden",
-              overflowY: "auto",
+              overflow: "hidden",
               fontFamily: "SF Pro Display, sans-serif",
             }}
           >
@@ -52,44 +50,67 @@ export default function App() {
               style={{
                 position: "relative",
                 zIndex: 2,
-                minHeight: "100vh",
+                height: "100%",
                 padding: "0 20px",
                 boxSizing: "border-box",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
+                justifyContent: "flex-end",
               }}
             >
-
-              {/* Логотип */}
-              <img
-                src="/logo.svg"
-                alt="SIVVEN"
-                style={{
-                  width: "130px",
-                  position: "absolute",
-                  top: "120px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  objectFit: "contain",
-                  filter:
-                    "brightness(0) saturate(100%) invert(84%) sepia(6%) saturate(243%) hue-rotate(182deg) brightness(92%) contrast(88%)",
-                }}
-              />
-              {/* Заголовок */}
+              {/* Логотип бренда в виде премиальной плашки */}
               <div
                 style={{
-                  marginTop: "313px",
-                  textAlign: "center",
+                  position: "absolute",
+                  top: "38px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "12px 24px",
+                  borderRadius: "20px",
+                  background: "rgba(8, 12, 6, 0.75)",
+                  backdropFilter: "blur(14px)",
+                  WebkitBackdropFilter: "blur(14px)",
+                  border: "1px solid rgba(158, 206, 82, 0.25)",
+                  boxShadow:
+                    "0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05)",
+                  zIndex: 10,
                 }}
               >
+                <img
+                  src="/logo.svg"
+                  alt="SIVVEN"
+                  style={{
+                    width: "120px",
+                    height: "auto",
+                    objectFit: "contain",
+                    filter:
+                      "brightness(0) saturate(100%) invert(84%) sepia(34%) saturate(541%) hue-rotate(39deg) brightness(98%) contrast(92%)",
+                  }}
+                />
+              </div>
+
+              {/* Информационный и интерактивный блок */}
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  marginBottom: "20px",
+                }}
+              >
+                {/* Заголовок */}
                 <div
                   style={{
-                    width: "520px",
-                    height: "64px",
-                    marginLeft: "0px",
+                    maxWidth: "520px",
+                    width: "100%",
                     fontFamily: "SF Pro Display, sans-serif",
-                    fontSize: "clamp(42px, 8vw, 64px)",
+                    fontSize: "clamp(36px, 8vw, 64px)",
                     fontWeight: 700,
                     lineHeight: "0.95",
                     letterSpacing: "-2px",
@@ -101,12 +122,11 @@ export default function App() {
 
                 <div
                   style={{
-                    width: "520px",
-                    height: "74px",
-                    marginLeft: "0px",
-                    marginTop: "0px",
+                    maxWidth: "520px",
+                    width: "100%",
+                    marginTop: "2px",
                     fontFamily: "SF Pro Display, sans-serif",
-                    fontSize: "clamp(42px, 8vw, 64px)",
+                    fontSize: "clamp(36px, 8vw, 64px)",
                     fontWeight: 400,
                     lineHeight: "0.95",
                     letterSpacing: "-2px",
@@ -115,83 +135,82 @@ export default function App() {
                 >
                   без сорняков
                 </div>
-              </div>
 
-              {/* Подзаголовок */}
-              <div
-                style={{
-                  marginTop: "28px",
-                  maxWidth: "320px",
-                  width: "100%",
-                  textAlign: "center",
-                  color: "#ffffffcc",
-                  fontFamily: "SF Pro Display, sans-serif",
-                  fontSize: "22px",
-                  fontWeight: 700,
-                  lineHeight: "1.35",
-                  letterSpacing: "0px",
-                  fontStretch: "condensed",
-                }}
-              >
-                Средство для
-                <br />
-                борьбы с нежелательной
-                <br />
-                растительностью
-              </div>
-
-              {/* Кнопка */}
-              <button
-                onClick={() => navigate("/product")}
-                style={{
-                  marginTop: "52px",
-                  width: "100%",
-                  maxWidth: "334px",
-                  height: "74px",
-                  borderRadius: "35px",
-                  border: "none",
-                  background:
-                    "linear-gradient(180deg, #7CA917 0%, #558014 52%, #7CA917 100%)",
-                  color: "#FFFFFF",
-                  fontSize: "26px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  boxShadow:
-                    "0px 0px 26px rgba(124, 169, 23, 0.45)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "16px",
-                  position: "relative",
-                }}
-              >
-                <span
+                {/* Подзаголовок */}
+                <div
                   style={{
-                    transform: "translateY(-1px)",
+                    marginTop: "22px",
+                    maxWidth: "320px",
+                    width: "100%",
+                    textAlign: "center",
+                    color: "#ffffffcc",
+                    fontFamily: "SF Pro Display, sans-serif",
+                    fontSize: "22px",
+                    fontWeight: 700,
+                    lineHeight: "1.35",
+                    letterSpacing: "0px",
+                    fontStretch: "condensed" as any,
                   }}
                 >
-                  Перейти к товару
-                </span>
+                  Средство для
+                  <br />
+                  борьбы с нежелательной
+                  <br />
+                  растительностью
+                </div>
 
-                <span
+                {/* Кнопка */}
+                <button
+                  onClick={() => navigate("/product")}
                   style={{
-                    fontSize: "38px",
-                    fontWeight: 300,
-                    transform: "translateY(-2px)",
+                    marginTop: "40px",
+                    width: "100%",
+                    maxWidth: "334px",
+                    height: "74px",
+                    borderRadius: "37px",
+                    border: "none",
+                    background:
+                      "linear-gradient(180deg, #7CA917 0%, #558014 52%, #7CA917 100%)",
+                    color: "#FFFFFF",
+                    fontSize: "26px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    boxShadow: "0px 0px 26px rgba(124, 169, 23, 0.45)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "16px",
                   }}
                 >
-                  ›
-                </span>
-              </button>
+                  <span
+                    style={{
+                      transform: "translateY(-1px)",
+                    }}
+                  >
+                    Перейти к товару
+                  </span>
+
+                  <span
+                    style={{
+                      fontSize: "38px",
+                      fontWeight: 300,
+                      transform: "translateY(-2px)",
+                    }}
+                  >
+                    ›
+                  </span>
+                </button>
+              </div>
 
               {/* Нижние блоки */}
               <div
                 style={{
-                  marginTop: "40px",
-                  paddingBottom: "34px",
+                  marginBottom: "16px",
                   display: "grid",
                   gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: "18px",
+                  gap: "12px",
+                  width: "100%",
+                  maxWidth: "400px",
                 }}
               >
                 {[
@@ -245,28 +264,21 @@ export default function App() {
                         }
                         alt=""
                         style={{
-                          width:
-                            [
-                              "42px", // sprout
-                              "29px", // path
-                              "28px", // home
-                              "35px", // greenhouse
-                            ][index],
-
-                          height:
-                            [
-                              "25px", // sprout
-                              "31px", // path
-                              "28px", // home
-                              "29px", // greenhouse
-                            ][index],
-
+                          width: [
+                            "42px", // sprout
+                            "29px", // path
+                            "28px", // home
+                            "35px", // greenhouse
+                          ][index],
+                          height: [
+                            "25px", // sprout
+                            "31px", // path
+                            "28px", // home
+                            "29px", // greenhouse
+                          ][index],
                           objectFit: "contain",
-
                           filter:
-                            [
-                              "brightness(0) saturate(100%) invert(78%) sepia(29%) saturate(851%) hue-rotate(36deg) brightness(96%) contrast(88%)",
-                            ][index],
+                            "brightness(0) saturate(100%) invert(78%) sepia(29%) saturate(851%) hue-rotate(36deg) brightness(96%) contrast(88%)",
                         }}
                       />
                     </div>
@@ -280,13 +292,8 @@ export default function App() {
                         fontWeight: 400,
                       }}
                     >
-                      <div style={{ color: "#FFFFFF" }}>
-                        {item.top}
-                      </div>
-
-                      <div style={{ color: "#9ECE52" }}>
-                        {item.bottom}
-                      </div>
+                      <div style={{ color: "#FFFFFF" }}>{item.top}</div>
+                      <div style={{ color: "#9ECE52" }}>{item.bottom}</div>
                     </div>
                   </div>
                 ))}
@@ -296,50 +303,14 @@ export default function App() {
         }
       />
 
-      <Route
-        path="/product"
-        element={<Product />}
-      />
-
-      <Route
-        path="/info"
-        element={<Info />}
-      />
-
-      <Route
-        path="/reviews"
-        element={<Reviews />}
-      />
-
-      <Route
-        path="/checkout"
-        element={<Checkout />}
-      />
-
-      <Route
-        path="/privacy"
-        element={<PrivacyPolicy />}
-      />
-
-      <Route
-        path="/contacts"
-        element={<Contacts />}
-      />
-
-      <Route
-        path="/delivery"
-        element={<Delivery />}
-      />
-
-      <Route
-        path="/admin"
-        element={<Admin />}
-      />
-
-      <Route
-        path="/support"
-        element={<Support />}
-      />
+      <Route path="/product" element={<Product />} />
+      <Route path="/info" element={<Info />} />
+      <Route path="/reviews" element={<Reviews />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/contacts" element={<Contacts />} />
+      <Route path="/delivery" element={<Delivery />} />
+      <Route path="/support" element={<Support />} />
     </Routes>
   );
 }

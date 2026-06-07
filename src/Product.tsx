@@ -1,8 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import {
-  TransformWrapper,
-  TransformComponent,
-} from "react-zoom-pan-pinch";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 export default function Product() {
   const navigate = useNavigate();
@@ -75,7 +72,6 @@ export default function Product() {
             letterSpacing: "2px",
             color: "#ffffff",
             textShadow: "0 4px 18px rgba(0,0,0,0.45)",
-
             transform: "translateY(-15px)",
           }}
         >
@@ -98,16 +94,12 @@ export default function Product() {
             borderRadius: "32px",
             overflow: "hidden",
             backgroundClip: "padding-box",
-
             background:
               "linear-gradient(180deg, rgba(108,94,72,0.58) 0%, rgba(74,64,48,0.72) 100%)",
             backdropFilter: "blur(18px)",
             border: "1px solid rgba(255,255,255,0.04)",
-
             padding: "18px 18px 24px 18px",
-
-            boxShadow:
-              "0 10px 24px rgba(0,0,0,0.16)",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.16)",
           }}
         >
           <TransformWrapper
@@ -150,12 +142,8 @@ export default function Product() {
                         objectFit: "contain",
                         borderRadius: "22px",
                         display: "block",
-
                         transition: "transform 0.25s ease",
-
-                        filter:
-                          "drop-shadow(0 8px 14px rgba(0, 0, 0, 0.01))",
-
+                        filter: "drop-shadow(0 8px 14px rgba(0, 0, 0, 0.01))",
                       }}
                     />
                   </div>
@@ -167,20 +155,15 @@ export default function Product() {
           <div
             style={{
               marginTop: "14px",
-
               textAlign: "center",
-
               fontSize: "10.5px",
               lineHeight: 1.35,
-
               color: "rgba(255,255,255,0.72)",
-
               fontWeight: 500,
             }}
           >
-            *Изображение носит ознакомительный характер.
-            Упаковка и производитель могут отличаться.
-
+            *Изображение носит ознакомительный характер. Упаковка и
+            производитель могут отличаться.
           </div>
 
           <div
@@ -225,7 +208,6 @@ export default function Product() {
               Отзывы
             </span>
           </div>
-
         </div>
       </div>
 
@@ -272,8 +254,7 @@ export default function Product() {
             color: "white",
             fontSize: "20px",
             fontWeight: 600,
-            boxShadow:
-              "0px 0px 26px rgba(124, 169, 23, 0.45)",
+            boxShadow: "0px 0px 26px rgba(124, 169, 23, 0.45)",
             cursor: "pointer",
           }}
         >
