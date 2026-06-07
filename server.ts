@@ -223,25 +223,39 @@ async function startServer() {
   // Trigger integration initialization asynchronously on boot
   initializeTelegramIntegration();
 
-  // Keep track of recently forwarded message IDs in-memory to prevent duplicate Telegram alerts
+  // Keep track of recently forwarded message IDs and text signatures in-memory to prevent duplicate Telegram alerts
   const forwardedMessageIds = new Set<string>();
+  const forwardedMessageTexts = new Set<string>();
 
   async function sendTelegramMessageDeduplicated(textToSend: string, messageId?: string | number): Promise<boolean> {
     const trimmedText = textToSend.trim();
 
+    // 1. Deduplicate by unique Database Message ID
     if (messageId) {
       const idStr = String(messageId);
-      if (forwardedMessageIds.has(idStr)) {
-        console.log("[Telegram Deduplicator] Skip sending duplicate message ID:", idStr);
-        return true; // Return success so frontend knows it was handled
+      if (idStr && !idStr.startsWith("temp-")) {
+        if (forwardedMessageIds.has(idStr)) {
+          console.log("[Telegram Deduplicator] Skip sending duplicate message by ID:", idStr);
+          return true; // Return success so client is unaffected
+        }
+        forwardedMessageIds.add(idStr);
+        // Keep ID in cache for 60 seconds
+        setTimeout(() => {
+          forwardedMessageIds.delete(idStr);
+        }, 60000);
       }
-
-      forwardedMessageIds.add(idStr);
-      // Keep ID in cache for 60 seconds, then clear
-      setTimeout(() => {
-        forwardedMessageIds.delete(idStr);
-      }, 60000);
     }
+
+    // 2. Extra safety: Deduplicate by exact text signature to handle RLS select restrictions (when messageId is temporary)
+    const textSignature = trimmedText;
+    if (forwardedMessageTexts.has(textSignature)) {
+      console.log("[Telegram Deduplicator] Skip sending duplicate message by text signature match");
+      return true; // Return success
+    }
+    forwardedMessageTexts.add(textSignature);
+    setTimeout(() => {
+      forwardedMessageTexts.delete(textSignature);
+    }, 60000); // Keep content signature in cache for 60 seconds
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -265,12 +279,88 @@ async function startServer() {
       if (!result.ok) {
         throw new Error(result.description || "OK is false");
       }
+      console.log("[Telegram Deduplicator] Message forwarded successfully to Telegram Chat:", chatId);
       return true;
     } catch (err: any) {
       console.error("[Telegram Deduplicator] Error calling Telegram API:", err.message || err);
+      // Clean up cache in case of hard failure so we can support retry attempts
+      if (messageId) {
+        forwardedMessageIds.delete(String(messageId));
+      }
+      forwardedMessageTexts.delete(textSignature);
       return false;
     }
   }
+
+  // Dual-channel safety: Server-side Supabase Realtime Listener to handle clients with cached code or inactive /api fetch
+  function startServerSupportMessagesListener() {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    if (!botToken || !chatId) {
+      console.log("[Support Database Listener] Telegram bot credentials not fully provided. DB Listener started in spectator mode.");
+      return;
+    }
+
+    console.log("[Support Database Listener] Subscribing to Supabase Realtime 'support_messages' changes...");
+
+    const channel = supabase
+      .channel("server-support-messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "support_messages",
+        },
+        async (payload) => {
+          try {
+            const newItem = payload.new;
+            if (!newItem) return;
+
+            // Only forward client messages, ignore replies by admin/support
+            if (newItem.sender !== "client") return;
+
+            const conversationId = newItem.conversation_id;
+            const messageText = newItem.message;
+            const messageId = newItem.id;
+
+            console.log(`[Support Database Listener] Message insert detected in Database. ID: ${messageId}, Conversation: ${conversationId}`);
+
+            // Fetch dynamic client name from conversations
+            let clientName = "Клиент";
+            try {
+              const { data: convData } = await supabase
+                .from("support_conversations")
+                .select("client_name")
+                .eq("id", conversationId)
+                .single();
+              if (convData && convData.client_name) {
+                clientName = convData.client_name;
+              }
+            } catch (convoErr: any) {
+              console.warn("[Support Database Listener] Error reading client name for conversation:", convoErr.message || convoErr);
+            }
+
+            const textToSend = 
+              `📨 Сообщение в чате поддержки (ID: ${conversationId})\n\n` +
+              `👤 Клиент: ${clientName}\n` +
+              `💬 Текст: ${messageText}`;
+
+            console.log("[Support Database Listener] Automatically forwarding message asynchronously (deduplicated)...");
+            await sendTelegramMessageDeduplicated(textToSend, messageId);
+          } catch (err: any) {
+            console.error("[Support Database Listener] Exception processing DB insert event:", err.message || err);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`[Support Database Listener] Realtime connection status: ${status}`);
+      });
+  }
+
+  // Active the DB listener
+  startServerSupportMessagesListener();
 
   // 1. Health check endpoint
   app.get("/api/health", async (req, res) => {
