@@ -189,6 +189,8 @@ export default function Support() {
     setMessageText("");
     setSending(true);
 
+    let insertedMessageId: number | undefined = undefined;
+
     // 1. Write to Supabase asynchronously and handle errors in isolation
     try {
       const { data: insertedData, error: messageError } = await supabase
@@ -205,6 +207,7 @@ export default function Support() {
       if (messageError) {
         console.warn("Supabase insert warning/error (likely RLS select restriction, message still saved):", messageError);
       } else if (insertedData && insertedData[0]) {
+        insertedMessageId = insertedData[0].id;
         // Swap temporary local message with the official Postgres row
         setMessages((prev) =>
           prev.map((msg) => (msg.id === tempId ? insertedData[0] : msg))
@@ -224,12 +227,15 @@ export default function Support() {
         localStorage.removeItem("last_completed_conversation");
       }
 
-      const response = await fetch("/api/sendTelegram", {
+      // We call /api/support-notify instead of /api/sendTelegram to prevent ad-blockers/tracking-filters 
+      // in user browsers from blocking this request.
+      const response = await fetch("/api/support-notify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          messageId: insertedMessageId,
           text:
             prefix +
             `📨 Сообщение в чате поддержки (ID: ${conversationId})\n\n` +
@@ -240,12 +246,12 @@ export default function Support() {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        console.error("Telegram proxy responded with an error:", errData.error || response.statusText);
+        console.error("Support proxy responded with an error:", errData.error || response.statusText);
       } else {
-        console.log("Telegram notification sent successfully.");
+        console.log("Support notification sent successfully from frontend.");
       }
     } catch (telegramErr: any) {
-      console.error("Failed to make /api/sendTelegram request:", telegramErr.message || telegramErr);
+      console.error("Failed to make /api/support-notify request:", telegramErr.message || telegramErr);
     } finally {
       setSending(false);
     }

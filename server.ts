@@ -223,9 +223,169 @@ async function startServer() {
   // Trigger integration initialization asynchronously on boot
   initializeTelegramIntegration();
 
+  // Keep track of recently forwarded message IDs in-memory to prevent duplicate Telegram alerts if both client and server triggers succeed
+  const forwardedMessageIds = new Set<number>();
+
+  // Real-time server-side listener for client messages to notify Telegram automatically
+  function startServerSupportMessagesListener() {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    if (!botToken || botToken.includes("123456789:ABCdefGhIJKlMnOpQrStUvWxYz") || botToken === "") {
+      console.log("[Support Database Listener] Telegram bot token is not configured on this instance. Live listener active but in quiet mode.");
+    } else {
+      console.log("[Support Database Listener] Bot Token and Chat ID found. Ready to forward client messages.");
+    }
+
+    console.log("[Support Database Listener] Connecting to Supabase support_messages realtime channel...");
+
+    const channel = supabase
+      .channel("server-support-messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "support_messages",
+        },
+        async (payload) => {
+          try {
+            const newMsg = payload.new;
+            if (!newMsg || !newMsg.id) return;
+
+            // Only notify for messages sent by clients
+            if (newMsg.sender !== "client") {
+              return;
+            }
+
+            const messageIdNum = parseInt(newMsg.id, 10);
+            if (!isNaN(messageIdNum) && forwardedMessageIds.has(messageIdNum)) {
+              console.log(`[Support Database Listener] Message ID ${newMsg.id} already forwarded. Skipping.`);
+              return;
+            }
+
+            if (!isNaN(messageIdNum)) {
+              forwardedMessageIds.add(messageIdNum);
+              // Clean up set size occasionally
+              if (forwardedMessageIds.size > 500) {
+                const firstElement = forwardedMessageIds.values().next().value;
+                if (firstElement !== undefined) {
+                  forwardedMessageIds.delete(firstElement);
+                }
+              }
+            }
+
+            console.log(`[Support Database Listener] New client message detected in DB! ID: ${newMsg.id}, Convo ID: ${newMsg.conversation_id}, Message: "${newMsg.message}"`);
+
+            // Fetch conversation to get client's name
+            let clientName = "Клиент";
+            try {
+              const { data: convData, error: convErr } = await supabase
+                .from("support_conversations")
+                .select("client_name")
+                .eq("id", newMsg.conversation_id)
+                .single();
+
+              if (convErr) {
+                console.warn("[Support Database Listener] Failed to fetch conversation info:", convErr.message);
+              } else if (convData) {
+                clientName = convData.client_name || "Клиент";
+              }
+            } catch (fetchErr) {
+              console.warn("[Support Database Listener] Exception fetching conversation info:", fetchErr);
+            }
+
+            // Target chat
+            if (!botToken || !chatId) {
+              console.warn("[Support Database Listener] Cannot forward to Telegram: Bot/Chat credentials are not set on this server instance.");
+              return;
+            }
+
+            const textToSend = `📨 Сообщение в чате поддержки (ID: ${newMsg.conversation_id})\n\n` +
+                               `👤 Клиент: ${clientName}\n` +
+                               `💬 Текст: ${newMsg.message}`;
+
+            console.log(`[Support Database Listener] Automatically forwarding message to Telegram Chat ${chatId}...`);
+            const tgResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: textToSend,
+              }),
+            });
+
+            const tgResult: any = await tgResponse.json();
+            if (tgResult.ok) {
+              console.log("[Support Database Listener] Realtime DB listener automatically sent notification to Telegram!");
+            } else {
+              console.error("[Support Database Listener] Telegram API error:", tgResult.description);
+            }
+          } catch (err) {
+            console.error("[Support Database Listener] Exception holding database real-time forwarder:", err);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`[Support Database Listener] Subscription status: ${status}`);
+      });
+  }
+
+  // Start the support messages listener
+  startServerSupportMessagesListener();
+
   // 1. Health check endpoint
   app.get("/api/health", async (req, res) => {
     res.json({ status: "ok", mode: "polling-independent", time: new Date().toISOString() });
+  });
+
+  // 1.5 Secure Bypass route to avoid adblock blocks (generic name without the word "telegram")
+  app.post("/api/support-notify", async (req, res) => {
+    const { text, messageId } = req.body;
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    if (!text) {
+      return res.status(400).json({ error: "Message text is required" });
+    }
+
+    if (!botToken || !chatId) {
+      console.warn("[Support Notify Route] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID are not configured on this server.");
+      return res.status(500).json({ error: "Telegram configuration is missing on the server" });
+    }
+
+    if (messageId) {
+      const dbIdNum = parseInt(messageId, 10);
+      if (!isNaN(dbIdNum)) {
+        if (forwardedMessageIds.has(dbIdNum)) {
+          console.log(`[Support Notify Route] Message ID ${messageId} already posted. Skipping to prevent duplicate.`);
+          return res.json({ success: true, remark: "already_forwarded" });
+        }
+        forwardedMessageIds.add(dbIdNum);
+      }
+    }
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: text,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.ok) {
+        throw new Error(result.description || "Failed to send message to Telegram");
+      }
+
+      console.log("[Support Notify Route] Message sent successfully to Telegram from client client request");
+      return res.json({ success: true });
+    } catch (err: any) {
+      console.error("[Support Notify Route] Error forwarding message:", err);
+      return res.status(500).json({ error: err.message || "Failed to notify Telegram" });
+    }
   });
 
   // 2. Secure Route to Send Messages to Telegram
