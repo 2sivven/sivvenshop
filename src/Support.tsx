@@ -279,7 +279,7 @@ export default function Support() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "calc(100vh - 20px)",
         backgroundImage: "url('/dead-grass.png')",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -288,7 +288,7 @@ export default function Support() {
         margin: "10px",
         backgroundSize: "cover",
         position: "relative",
-        overflowX: "hidden",
+        overflow: "hidden",
         color: "white",
         fontFamily: "SF Pro Display, sans-serif",
         padding: "22px",
@@ -355,7 +355,7 @@ export default function Support() {
         )}
       </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
         {!conversationId ? (
           /* Форма Onboarding */
           <div
@@ -567,7 +567,6 @@ export default function Support() {
                 display: "flex",
                 flexDirection: "column",
                 gap: "14px",
-                maxHeight: "max(350px, 45vh)",
               }}
             >
               {loadingHistory ? (

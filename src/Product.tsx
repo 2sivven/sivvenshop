@@ -30,7 +30,7 @@ export default function Product() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "24px",
+          marginBottom: "16px",
         }}
       >
         {/* Назад */}
@@ -61,7 +61,7 @@ export default function Product() {
       <div
         style={{
           textAlign: "center",
-          marginTop: "10px",
+          margin: "16px 0",
         }}
       >
         <div
@@ -72,7 +72,6 @@ export default function Product() {
             letterSpacing: "2px",
             color: "#ffffff",
             textShadow: "0 4px 18px rgba(0,0,0,0.45)",
-            transform: "translateY(-15px)",
           }}
         >
           Glifosat 480 g/l
@@ -82,7 +81,7 @@ export default function Product() {
       {/* Бутылка */}
       <div
         style={{
-          marginTop: "34px",
+          marginTop: "16px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
